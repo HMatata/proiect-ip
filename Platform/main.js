@@ -1,0 +1,49 @@
+var express = require('express'),
+    crypto = require('crypto'),
+	app = express(),
+	server = require('http').createServer(app),
+	io = require('socket.io').listen(server),
+    mongo = require('mongodb').MongoClient;
+
+app.use(express.static(__dirname + '/public'));
+
+app.get('/', function(req, res){});
+
+server.listen(8080);
+
+function hash(data) {
+    var sha = crypto.createHash('sha1');
+    sha.update(data);
+    return sha.digest('base64');
+}
+
+app.
+
+mongo.connect("mongodb://localhost:27017/content", function(err, db) {
+    if(err) { return console.dir(err); }
+    console.log("Connected to mongo.");
+
+
+    io.sockets.on('connection', function (socket) {
+        socket.on('useradd', function(data) {
+            data.password = hash(data.password);
+            db.collection('users').insert(data, {w:1}, function(err, result) {}); //TODO: should do something with the return value
+        });
+        socket.on('auth', function(data) {
+            data.password = hash(data.password);
+            db.collection('users').findOne(data, function (err, doc) {
+                if (doc == null)
+                    socket.emit('error', {msg:"Authentification failed."});
+                else {
+                    socket.set('location', data, function () {
+                        console.log("Saved user data on socket object.");
+                    });
+                    socket.emit('identify', doc); //TODO: Check if this is actually useful
+                }
+            });
+
+        });
+
+    });
+});
+

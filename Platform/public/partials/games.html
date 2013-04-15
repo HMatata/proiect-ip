@@ -1,0 +1,16 @@
+<div id="gamelist">
+	<div class="row-fluid" ng-repeat="group in gamesgroup">
+		<div class="span4" ng-repeat="game in group">
+			<div class="thumbnail">
+				<h3>
+					<a href="#/games/{{game.id}}">{{game.name}}</a>
+				</h3>
+				<img class="img-polaroid" src="{{game.image}}">
+				<div class="description text-info">{{game.description}}</div>
+				<div class="text-center">
+					<a class="btn btn-success " href="#/games/{{game.id}}"> Play </a>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

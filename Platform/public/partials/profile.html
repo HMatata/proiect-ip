@@ -1,0 +1,22 @@
+<div class="row-fluid">
+	<div class="span2">
+		<h3>Profile picture</h3>
+		<img class="img-polaroid" src="{{user.image}}"/>
+	</div>
+	<div class="span4">
+		<h3>Update Informations</h3>
+
+		<div class="input-prepend">
+			<span class="add-on">Username</span>
+			<input id="prependedInput" type="text" placeholder="{{user.name}}">
+		</div>
+
+		<div class="input-prepend">
+			<span class="add-on">Nick name</span>
+			<input id="prependedInput" type="text" placeholder="{{user.nickname}}">
+		</div>
+
+		<textarea rows="3"> {{user.about}}</textarea>
+
+	</div>
+</div>

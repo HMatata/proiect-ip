@@ -1,0 +1,19 @@
+<div class="row-fluid">
+	<div class="span4" ng-repeat="game in games">
+
+		<div class="thumbnail">
+			<h2>
+				<a href="#/game/{{game.id}}">{{game.name}}</a>
+			</h2>
+
+			<img src="{{game.image}}" alt="{{game.name}}">
+
+			<div class="game_desc">{{game.description}}</div>
+
+			<div>
+				<a class="btn" href="#"> Play </a>
+			</div>
+
+		</div>
+	</div>
+</div>

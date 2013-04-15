@@ -1,0 +1,11 @@
+[ng-view] {
+    /*border: 1px solid blue;*/
+    margin: 0;
+    /*padding:1em;*/
+}
+ 
+.partial-info {
+    background-color: blue;
+    color: white;
+    padding: 3px;
+}
