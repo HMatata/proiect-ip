@@ -9,7 +9,7 @@ app.use(express.static(__dirname + '/public'));
 
 app.get('/', function(req, res){});
 
-server.listen(8080);
+server.listen(6001);
 
 function hash(data) {
     var sha = crypto.createHash('sha1');
