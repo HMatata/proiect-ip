@@ -17,11 +17,25 @@ function hash(data) {
     return sha.digest('base64');
 }
 
-app.
+
 
 mongo.connect("mongodb://localhost:27017/content", function(err, db) {
     if(err) { return console.dir(err); }
     console.log("Connected to mongo.");
+
+    // Setting up storage for Redis
+    var RedisStore = require('socket.io/lib/stores/redis'),
+        redis = require('socket.io/node_modules/redis'),
+        pub = redis.createClient(),
+        sub = redis.createClient(),
+        client = redis.createClient();
+
+    io.set('store', new RedisStore({
+        redis: redis,
+        redisPub: pub,
+        redisSub: sub,
+        redisClient: client
+    }));
 
 
     io.sockets.on('connection', function (socket) {
@@ -46,4 +60,3 @@ mongo.connect("mongodb://localhost:27017/content", function(err, db) {
 
     });
 });
-
