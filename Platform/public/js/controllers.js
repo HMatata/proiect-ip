@@ -11,20 +11,36 @@
 var Controllers = {};
 
 Controllers.main = function main($scope, $route, $location) {
-
+    console.log()
 	$scope.$route = $route;
 
 }
 
-Controllers.games = function games($scope, Games) {
+Controllers.games = function games($scope, socket, Games) {
 
-	$scope.gamesgroup = Games.query();
+    console.log("games called", $scope.gamesgroup);
+    socket.on('init', function () {
+        console.log("merge");
+
+    });
+
+    $scope.gamesgroup = Games.query();
+    /*
+    socket.on('games:list', function (data) {
+
+        $scope.gamesgroup = data;
+
+    });
+      */
+
 
 }
 
-Controllers.userProfile = function userProfile($scope, $http, $location) {
+Controllers.userProfile = function userProfile($scope, $http, $location, socket) {
 
-	$http.get('json/user.json').success(function(data) {
+
+	/*
+    $http.get('json/user.json').success(function(data) {
 		$scope.user = data;
 	});
 
@@ -38,6 +54,7 @@ Controllers.userProfile = function userProfile($scope, $http, $location) {
 	};
 
 	$scope.cancel();
+	*/
 }
 
 Controllers.gameInstance = function gameInstance($scope, $location) {

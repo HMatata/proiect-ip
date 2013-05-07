@@ -3,7 +3,8 @@ var express = require('express'),
 	app = express(),
 	server = require('http').createServer(app),
 	io = require('socket.io').listen(server),
-    mongo = require('mongodb').MongoClient;
+    mongo = require('mongodb').MongoClient,
+    fs = require('fs');
 
 app.use(express.static(__dirname + '/public'));
 
@@ -16,8 +17,6 @@ function hash(data) {
     sha.update(data);
     return sha.digest('base64');
 }
-
-
 
 mongo.connect("mongodb://localhost:27017/content", function(err, db) {
     if(err) { return console.dir(err); }
@@ -39,10 +38,17 @@ mongo.connect("mongodb://localhost:27017/content", function(err, db) {
 
 
     io.sockets.on('connection', function (socket) {
+        socket.emit('init', {});
+        //TODO: replace this with relevant code to get the games from the database
+        fs.readFile('./Platform/public/games/games.json', { encoding: 'utf8'}, function (err, data){
+            if (err) throw err;
+            socket.emit('games:list', JSON.parse(data));
+        });
         socket.on('useradd', function(data) {
             data.password = hash(data.password);
             db.collection('users').insert(data, {w:1}, function(err, result) {}); //TODO: should do something with the return value
         });
+
         socket.on('auth', function(data) {
             data.password = hash(data.password);
             db.collection('users').findOne(data, function (err, doc) {
@@ -55,8 +61,6 @@ mongo.connect("mongodb://localhost:27017/content", function(err, db) {
                     socket.emit('identify', doc); //TODO: Check if this is actually useful
                 }
             });
-
         });
-
     });
 });
