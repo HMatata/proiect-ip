@@ -40,10 +40,13 @@ mongo.connect("mongodb://localhost:27017/content", function(err, db) {
     io.sockets.on('connection', function (socket) {
         socket.emit('init', {});
         //TODO: replace this with relevant code to get the games from the database
-        fs.readFile('./Platform/public/games/games.json', { encoding: 'utf8'}, function (err, data){
-            if (err) throw err;
-            socket.emit('games:list', JSON.parse(data));
+        socket.on('games:list', function () {
+            fs.readFile('./Platform/public/games/games.json', { encoding: 'utf8'}, function (err, data){
+                if (err) throw err;
+                socket.emit('games:list', JSON.parse(data));
+            });
         });
+
         socket.on('useradd', function(data) {
             data.password = hash(data.password);
             db.collection('users').insert(data, {w:1}, function(err, result) {}); //TODO: should do something with the return value

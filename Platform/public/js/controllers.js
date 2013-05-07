@@ -25,19 +25,18 @@ Controllers.games = function games($scope, socket, Games) {
     });
 
     $scope.gamesgroup = Games.query();
-    /*
+    socket.emit('games:list', {});
     socket.on('games:list', function (data) {
 
         $scope.gamesgroup = data;
 
     });
-      */
+
 
 
 }
 
 Controllers.userProfile = function userProfile($scope, $http, $location, socket) {
-
 
 	/*
     $http.get('json/user.json').success(function(data) {
