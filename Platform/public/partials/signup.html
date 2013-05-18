@@ -1,0 +1,19 @@
+<div class="row-fluid">
+    <div class="span4">
+        <h3>Sign up</h3>
+        <form novalidate>
+            <div class="input-prepend">
+                <span class="add-on">Username</span>
+                <input id="prependedInput" ng-model="user.username" type="text">
+            </div>
+
+            <div class="input-prepend">
+                <span class="add-on">Password</span>
+                <input id="prependedInput" ng-model="user.password" type="password">
+            </div>
+            <button type="button" class="btn btn-primary" ng-click="signup()" data-loading-text="Loading...">Sign up</button>
+
+        </form>
+
+    </div>
+</div>
