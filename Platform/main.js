@@ -41,7 +41,7 @@ mongo.connect("mongodb://localhost:27017/content", function(err, db) {
         socket.emit('init', {});
         //TODO: replace this with relevant code to get the games from the database
         socket.on('games:list', function () {
-            fs.readFile('./Platform/public/games/games.json', { encoding: 'utf8'}, function (err, data){
+            fs.readFile('./public/games/games.json', { encoding: 'utf8'}, function (err, data){
                 if (err) throw err;
                 socket.emit('games:list', JSON.parse(data));
             });
