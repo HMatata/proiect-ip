@@ -63,16 +63,14 @@ mongo.connect("mongodb://localhost:27017/content", function(err, db) {
             });
         });
 
-        socket.on('auth', function(data) {
+        socket.on('user:auth', function(data) {
             data.password = hash(data.password);
             db.collection('users').findOne(data, function (err, doc) {
-                if (doc == null)
-                    socket.emit('error', {msg:"Authentification failed."});
+                if (doc == null) {
+                    socket.emit('user:error', {msg:"Authentification failed."});
+                }
                 else {
-                    socket.set('location', data, function () {
-                        console.log("Saved user data on socket object.");
-                    });
-                    socket.emit('identify', doc); //TODO: Check if this is actually useful
+                    socket.emit('user:identify', doc); //TODO: Check if this is actually useful
                 }
             });
         });
