@@ -4,7 +4,8 @@ var express = require('express'),
 	server = require('http').createServer(app),
 	io = require('socket.io').listen(server),
     mongo = require('mongodb').MongoClient,
-    fs = require('fs');
+    fs = require('fs'),
+    cookie_parser = require('cookie');
 
 app.use(express.static(__dirname + '/public'));
 
@@ -37,32 +38,29 @@ mongo.connect("mongodb://localhost:27017/content", function(err, db) {
     }));
 
 
+
+
     io.sockets.on('connection', function (socket) {
         socket.emit('init', {});
         //TODO: replace this with relevant code to get the games from the database
         socket.on('games:list', function () {
-
-            db.collection('games', function(err, collection){
-
-                collection.find( {}, function(err, cursor){
-
-                    cursor.toArray( function(err, items){
-
-                        socket.emit('games:list', items );
-
-                    });
-                });
+            fs.readFile('./public/games/games.json',
+                { encoding: 'utf8'}, function (err, data){
+                if (err) throw err;
+                socket.emit('games:list', JSON.parse(data));
             });
-
-//            fs.readFile('./public/games/games.json', { encoding: 'utf8'}, function (err, data){
-//                if (err) throw err;
-//                socket.emit('games:list', JSON.parse(data));
-//            });
         });
 
-        socket.on('useradd', function(data) {
+        socket.on('user:add', function(data) {
             data.password = hash(data.password);
-            db.collection('users').insert(data, {w:1}, function(err, result) {}); //TODO: should do something with the return value
+            console.log(data);
+            db.collection('users').insert(data, {w:1}, function(err, result) {
+                if (err) {
+                    console.log("Error:",err);
+                    return;
+                }
+                console.log(result);
+            });
         });
 
         socket.on('auth', function(data) {
