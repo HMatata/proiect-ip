@@ -13,7 +13,7 @@ var Controllers = {};
 Controllers.main = function main($scope, $route, $location, socket) {
     //if $scope.localsocket.emit('auth', )
 	$scope.$route = $route;
-
+    console.log("called the main controller");
 }
 
 Controllers.games = function games($scope, socket, Games) {
@@ -65,6 +65,23 @@ Controllers.signup = function signup($scope, socket) {
       console.log($scope.user);
       socket.emit('user:add', $scope.user);
     };
+}
+
+Controllers.login = function login($scope, socket) {
+    socket.on('user:identify', function (data){
+        console.log("Identified as:", data);
+        //TODO: Store the data in the local storage
+    });
+    socket.on('user:error', function (data){
+        console.log("Error:", data.msg);
+        //TODO: Print a nice message
+    });
+    $scope.login = function () {
+       console.log($scope.user);
+       socket.emit('user:auth', $scope.user);
+
+
+    }
 }
 
 
