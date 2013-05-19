@@ -24,12 +24,20 @@ function compute_hash(data) {
     return sha.digest('base64');
 }
 
+function set_errno( err ){
+
+    if( err == null ){
+        return { ok : 0 };
+    }
+
+    return { ok : err };
+}
 /*
     Wrapper for collection.find()
  */
 function scrape_collection( coll, query, opt, callback ){
 
-    console.log("Mongo Query: " + coll + ": " + JSON.stringify(query) + " " + JSON.stringify(query) );
+    console.log("Mongo Query: " + coll + ": " + JSON.stringify(query) + " " + JSON.stringify(opt) );
 
     db.collection( coll ).find( query, opt, function(err, cursor){
         if( err ) throw err;
@@ -43,6 +51,37 @@ function scrape_collection( coll, query, opt, callback ){
 
     });
 }
+
+function insert_document( coll, element, opt, callback ){
+
+    console.log("Mongo Insert: " + coll + ": " + JSON.stringify(element) );
+
+    db.collection( coll ).insert( element, opt, function(err){
+        var ret = set_errno(err);
+        callback(ret);
+    })
+}
+
+function save_document( coll, element, opt, callback ){
+
+    console.log("Mongo Save: " + coll + ": " + JSON.stringify(element) + " " + JSON.stringify(opt) );
+
+    db.collection( coll ).save( element, opt, function(err){
+        var ret = set_errno(err);
+        callback(ret);
+    })
+}
+
+function update_document( coll, element, opt, callback ){
+
+    console.log("Mongo Update: " + coll + ": " + JSON.stringify(element) + " " + JSON.stringify(opt) );
+
+    db.collection( coll ).update( element, opt, function(err){
+        var ret = set_errno(err);
+        callback(ret);
+    })
+}
+
 
 var db = null;
 var security_key = null;
@@ -124,6 +163,29 @@ function setup_api()
                                  res.send( results );
                              });
         }
+    });
+
+    app.get('/add_achievements/:achievement/:user_id/:app_id/:ext_hash', function(req, res){
+
+        var app_id      = req.params.app_id;
+        var user_id     = req.params.user_id;
+        var ext_hash    = req.params.ext_hash;
+        var achievement = req.params.achievement;
+
+        var data = app_id + user_id + achievement;
+
+        if( valid_hash( ext_hash, data ) ){
+
+            console.log("Here");
+            update_document( 'user_game_awards',
+                           { user_id : Number(user_id), app_id : Number(app_id) },
+                           { $addToSet: { awards : achievement } },
+
+                           function( results ){
+                             res.send( results );
+                           });
+        }
+
     });
 
 
