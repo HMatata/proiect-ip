@@ -68,10 +68,14 @@ Controllers.signup = function signup($scope, socket) {
     };
 }
 
-Controllers.login = function login($scope, socket) {
+Controllers.login = function login($scope, socket, localStorageService) {
+
     socket.on('user:identify', function (data){
         console.log("Identified as:", data);
-        //TODO: Store the data in the local storage
+        localStorageService.add('user',JSON.stringify(data));
+
+        //TODO: This is how you should use it, don't forget JSON.parse
+        console.log(JSON.parse(localStorageService.get('user')));
     });
     socket.on('user:error', function (data){
         console.log("Error:", data.msg);
