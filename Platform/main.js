@@ -45,11 +45,28 @@ mongo.connect("mongodb://localhost:27017/content", function(err, db) {
         socket.emit('init', {});
         //TODO: replace this with relevant code to get the games from the database
         socket.on('games:list', function () {
-            fs.readFile('./games/games.json',
-                { encoding: 'utf8'}, function (err, data){
-                if (err) throw err;
-                socket.emit('games:list', JSON.parse(data));
+
+
+            db.collection('games', function(err, collection){
+                if(err) throw err;
+
+                collection.find( {}, function(err, cursor){
+                    if(err) throw err;
+
+                    cursor.toArray( function(err, items){
+                        if(err) throw err;
+
+                        socket.emit('games:list', items );
+
+                    });
+                });
             });
+
+//            fs.readFile('./games/games.json',
+//                { encoding: 'utf8'}, function (err, data){
+//                if (err) throw err;
+//                socket.emit('games:list', JSON.parse(data));
+//            });
         });
 
         socket.on('user:add', function(data) {
