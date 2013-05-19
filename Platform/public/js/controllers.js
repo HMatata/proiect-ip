@@ -10,10 +10,29 @@
 
 var Controllers = {};
 
-Controllers.main = function main($scope, $route, $location, socket) {
+Controllers.main = function main($scope, $rootScope, $route, $location, socket, localStorageService) {
     //if $scope.localsocket.emit('auth', )
 	$scope.$route = $route;
+
     console.log("called the main controller");
+    var user_info = JSON.parse(localStorageService.get('user'));
+    console.log("Scope:", $scope);
+    if (user_info != null)
+        $scope.username = user_info.username;
+    else
+        $scope.username = "Guest";
+
+    $rootScope.$on('userdata', function () {
+        var user_info = JSON.parse(localStorageService.get('user'));
+        console.log("Scope:", $scope);
+        if (user_info != null)
+            $scope.username = user_info.username;
+        else
+            $scope.username = "Guest";
+    });
+    console.log(user_info);
+
+
 }
 
 Controllers.games = function games($scope, socket, Games) {
@@ -67,14 +86,15 @@ Controllers.signup = function signup($scope, socket) {
     };
 }
 
-Controllers.login = function login($scope, socket, localStorageService) {
+Controllers.login = function login($scope, $location, socket, localStorageService) {
 
     socket.on('user:identify', function (data){
         console.log("Identified as:", data);
         localStorageService.add('user',JSON.stringify(data));
-
+        $scope.$emit('userdata');
         //TODO: This is how you should use it, don't forget JSON.parse
         console.log(JSON.parse(localStorageService.get('user')));
+        $location.path('/home');
     });
     socket.on('user:error', function (data){
         console.log("Error:", data.msg);
