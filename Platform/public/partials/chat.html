@@ -1,0 +1,17 @@
+<div class="row-fluid">
+    <div class="span4">
+        <h3>Chat</h3>
+        <div class="col"><h3>Users</h3>
+            <div class="overflowable">
+                <p ng-repeat="user in users" class="ng-scope ng-binding"></p>
+            </div>
+        </div>
+        <div class="overflowable">
+            <p ng-class="{alert: message.user == 'chatroom'}" ng-repeat="message in messages" class="ng-scope ng-binding">{{message.text}}</p>
+        </div>
+        <form ng-submit="sendMessage()" class="ng-pristine ng-valid">
+            Message: <input ng-model="message" size="60" class="ng-pristine ng-valid">
+            <input type="submit" value="Send">
+        </form>
+    </div>
+</div>

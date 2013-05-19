@@ -4,14 +4,15 @@ var express = require('express'),
 	server = require('http').createServer(app),
 	io = require('socket.io').listen(server),
     mongo = require('mongodb').MongoClient,
-    fs = require('fs'),
-    cookie_parser = require('cookie');
+    fs = require('fs');
+    //cookie_parser = require('cookie');
 
 app.use(express.static(__dirname + '/public'));
 
 app.get('/', function(req, res){});
 
 server.listen(6001);
+
 
 function hash(data) {
     var sha = crypto.createHash('sha1');
@@ -44,7 +45,7 @@ mongo.connect("mongodb://localhost:27017/content", function(err, db) {
         socket.emit('init', {});
         //TODO: replace this with relevant code to get the games from the database
         socket.on('games:list', function () {
-            fs.readFile('./public/games/games.json',
+            fs.readFile('./games/games.json',
                 { encoding: 'utf8'}, function (err, data){
                 if (err) throw err;
                 socket.emit('games:list', JSON.parse(data));
@@ -72,6 +73,21 @@ mongo.connect("mongodb://localhost:27017/content", function(err, db) {
                 else {
                     socket.emit('user:identify', doc); //TODO: Check if this is actually useful
                 }
+            });
+        });
+
+
+        // broadcast a user's message to other users
+        socket.on('send:message', function (data) {
+            socket.broadcast.emit('send:message', {
+                text: data.message
+            });
+        });
+
+        // clean up when a user leaves, and broadcast it to other users
+        socket.on('disconnect', function () {
+            socket.broadcast.emit('user:left', {
+                name: "gogu"
             });
         });
     });
