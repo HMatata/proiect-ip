@@ -72,11 +72,11 @@ function save_document( coll, element, opt, callback ){
     })
 }
 
-function update_document( coll, element, opt, callback ){
+function update_document( coll, element, update, opt, callback ){
 
     console.log("Mongo Update: " + coll + ": " + JSON.stringify(element) + " " + JSON.stringify(opt) );
 
-    db.collection( coll ).update( element, opt, function(err){
+    db.collection( coll ).update( element, update, opt, function(err){
         var ret = set_errno(err);
         callback(ret);
     })
@@ -125,10 +125,10 @@ function get_security_key()
     });
 }
 
-function valid_hash( ext_hash, data )
+function valid_hash( digest, data )
 {
     var hash_internal = compute_hash( security_key + data );
-    var hash_external = compute_hash( ext_hash     + data );
+    var hash_external = compute_hash( digest     + data );
 
     console.log("Hashbang: " + hash_internal + " " + hash_external + "\n" );
 
@@ -145,14 +145,15 @@ function setup_api()
     /*
         Example query : /get_achievements/1/1/unbreakable_secure_key
      */
-    app.get('/get_achievements/:user_id/:app_id/:ext_hash', function(req, res){
+    app.get('/get_achievements/:user_id/:app_id/:digest', function(req, res){
 
+        var digest   = req.params.digest;
         var app_id   = req.params.app_id;
         var user_id  = req.params.user_id;
-        var ext_hash = req.params.ext_hash;
+
         var data = app_id + user_id;
 
-        if( valid_hash( ext_hash, data ) ){
+        if( valid_hash( digest, data ) ){
 
             console.log("Here");
             scrape_collection( 'user_game_awards',
@@ -163,31 +164,96 @@ function setup_api()
                                  res.send( results );
                              });
         }
+        else
+        {
+            res.send( { ok : "Invalid hash" } );
+        }
     });
 
-    app.get('/add_achievements/:achievement/:user_id/:app_id/:ext_hash', function(req, res){
+    app.get('/add_achievements/:achievement/:user_id/:app_id/:digest', function(req, res){
 
+        var digest      = req.params.digest;
         var app_id      = req.params.app_id;
         var user_id     = req.params.user_id;
-        var ext_hash    = req.params.ext_hash;
         var achievement = req.params.achievement;
 
         var data = app_id + user_id + achievement;
 
-        if( valid_hash( ext_hash, data ) ){
+        if( valid_hash( digest, data ) ){
 
             console.log("Here");
             update_document( 'user_game_awards',
                            { user_id : Number(user_id), app_id : Number(app_id) },
                            { $addToSet: { awards : achievement } },
-
+                           {},
                            function( results ){
                              res.send( results );
                            });
         }
+        else
+        {
+            res.send( { ok : "Invalid Hash" } )
+        }
 
     });
 
+    /*
+        Example query /get_scores/1/1/unbreakable_secure_key
+     */
+
+    app.get('/get_scores/:user_id/:app_id/:digest', function(req, res){
+
+        var digest    = req.params.digest;
+        var app_id    = req.params.app_id;
+        var user_id   = req.params.user_id;
+
+        var data = app_id + user_id;
+
+        if( valid_hash( digest, data ) ){
+
+            scrape_collection( 'user_game_score',
+                { user_id : Number(user_id), app_id : Number(app_id) },
+                { score : Number(1), context : Number(1) },
+
+                function( results ){
+                    res.send( results );
+                });
+        }
+        else
+        {
+            res.send( { ok : "Invalid Hash" } );
+        }
+
+    });
+
+    app.get('/add_score/:user_id/:app_id/:score/:context/:digest', function( req, res ){
+
+        var digest    = req.params.digest;
+        var app_id    = req.params.app_id;
+        var user_id   = req.params.user_id;
+
+        var score   = req.params.score;
+        var context = req.params.context;
+
+        data = app_id + user_id + score + context;
+
+        if( valid_hash( digest, data ) ){
+
+            update_document( 'user_game_score',
+                { user_id : Number(user_id), app_id : Number(app_id) },
+                { $addToSet: { context : context }, $inc : { score: Number(score) } },
+                { upsert : true },
+                function( results ){
+                    res.send( results );
+                });
+
+        }
+        else
+        {
+            res.send( { ok : "Invalid Hash" } );
+        }
+
+    });
 
 }
 
