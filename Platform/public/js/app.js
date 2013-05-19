@@ -6,7 +6,7 @@
 
 
 
-var app = angular.module('WebAppModule', ['gameService']);
+var app = angular.module('WebAppModule', ['gameService', 'LocalStorageModule']);
 app.config( function($routeProvider) {
 	$routeProvider.
 		when('/home', { redirectTo: '/games'}).
