@@ -55,12 +55,14 @@ Controllers.games = function games($scope, socket, Games) {
 
 }
 
-Controllers.userProfile = function userProfile($scope, $http, $location, socket) {
+Controllers.userProfile = function userProfile($scope, $http, $location, localStorageService,socket) {
 
-
-    $http.get('json/user.json').success(function(data) {
-		$scope.user = data;
-	});
+    var user = JSON.parse(localStorageService.get('user'));
+    if (!user)
+        $location.path("/login");
+    $scope.user = {};
+    angular.copy(user, $scope.user);
+    console.log("Scope user object:",$scope.user);
 
 	$scope.cancel = function() {
 		$scope.form = angular.copy($scope.person);
@@ -79,9 +81,16 @@ Controllers.gameInstance = function gameInstance($scope, $location) {
 
 }
 
-Controllers.signup = function signup($scope, socket) {
+Controllers.signup = function signup($scope, $location, socket) {
+    socket.on('user:signup', function (data) {
+        if (data.msg == 'ok')
+            $location.path('/login');
+        //TODO: Show appropiate message if signup data is incorrect
+
+    });
     $scope.signup = function () {
       console.log($scope.user);
+
       socket.emit('user:add', $scope.user);
     };
 }
@@ -100,6 +109,7 @@ Controllers.login = function login($scope, $location, socket, localStorageServic
         console.log("Error:", data.msg);
         //TODO: Print a nice message
     });
+
     $scope.login = function () {
        console.log($scope.user);
        socket.emit('user:auth', $scope.user);

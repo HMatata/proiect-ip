@@ -20,6 +20,12 @@ function hash(data) {
     return sha.digest('base64');
 }
 
+function gravatar(email) {
+    var md5 = crypto.createHash('md5');
+    md5.update(email.trim().toLowerCase());
+    return "http://www.gravatar.com/avatar/"+md5.digest('hex');
+}
+
 mongo.connect("mongodb://localhost:27017/content", function(err, db) {
     if(err) { return console.dir(err); }
     console.log("Connected to mongo.");
@@ -71,13 +77,16 @@ mongo.connect("mongodb://localhost:27017/content", function(err, db) {
 
         socket.on('user:add', function(data) {
             data.password = hash(data.password);
+            data.image = gravatar(data.email);
             console.log(data);
+
             db.collection('users').insert(data, {w:1}, function(err, result) {
                 if (err) {
                     console.log("Error:",err);
                     return;
                 }
                 console.log(result);
+                socket.emit('user:signup', {msg:'ok'});
             });
         });
 
