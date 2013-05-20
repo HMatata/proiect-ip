@@ -47,8 +47,6 @@ mongo.connect("mongodb://localhost:27017/content", function(err, db) {
     }));
 
 
-
-
     io.sockets.on('connection', function (socket) {
         socket.emit('init', {});
         //TODO: replace this with relevant code to get the games from the database
