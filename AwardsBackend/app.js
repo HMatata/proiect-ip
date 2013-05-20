@@ -89,7 +89,6 @@ function update_document( coll, element, update, opt, callback ){
 
 
 var db = null;
-var security_key = null;
 
 function trigger(){
     get_db_object();
@@ -128,9 +127,9 @@ function get_security_keys()
     });
 }
 
-function valid_hash( digest, data )
+function valid_hash( digest, app_id, data )
 {
-    var hash_internal = compute_hash( security_key + data );
+    var hash_internal = compute_hash( app_key[app_id] + data );
     console.log("Hashbang: " + hash_internal + " " + digest + "\n" );
 
     return hash_internal == digest;
@@ -149,7 +148,7 @@ function setup_api()
 
         var data = app_id + user_id;
 
-        if( valid_hash( digest, data ) ){
+        if( valid_hash( digest, app_id, data ) ){
 
             console.log("Here");
             scrape_collection( 'user_game_awards',
@@ -175,7 +174,7 @@ function setup_api()
 
         var data = app_id + user_id + achievement;
 
-        if( valid_hash( digest, data ) ){
+        if( valid_hash( digest, app_id, data ) ){
 
             console.log("Here");
             update_document( 'user_game_awards',
@@ -205,7 +204,7 @@ function setup_api()
 
         var data = app_id + user_id;
 
-        if( valid_hash( digest, data ) ){
+        if( valid_hash( digest, app_id, data ) ){
 
             scrape_collection( 'user_game_score',
                 { user_id : Number(user_id), app_id : Number(app_id) },
@@ -231,9 +230,9 @@ function setup_api()
         var score   = req.params.score;
         var context = req.params.context;
 
-        data = app_id + user_id + score + context;
+        var data = app_id + user_id + score + context;
 
-        if( valid_hash( digest, data ) ){
+        if( valid_hash( digest, app_id, data ) ){
 
             update_document( 'user_game_score',
                 { user_id : Number(user_id), app_id : Number(app_id) },
