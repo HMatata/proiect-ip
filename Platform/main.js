@@ -19,7 +19,7 @@ server.listen(6001);
 function hash(data) {
     var sha = crypto.createHash('sha1');
     sha.update(data);
-    return sha.digest('base64');
+    return sha.digest('base64').replace("/",'|');
 }
 
 function gravatar(email) {

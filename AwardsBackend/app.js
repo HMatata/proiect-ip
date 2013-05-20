@@ -21,14 +21,18 @@ app.get('/', function(req, res){
 function compute_hash(data) {
     var sha = crypto.createHash('sha1');
     sha.update(data);
-    return sha.digest('base64');
+    return sha.digest('base64').replace("/",'|');
 }
 
-function set_errno( err ){
+function set_errno( err, dbg ){
 
     if( err == null ){
         return { ok : 0 };
     }
+
+    db.collection( "error_log").insert( { query : dbg, err : err }, function(err){
+        if( err ) throw err;
+    });
 
     return { ok : err };
 }
@@ -37,7 +41,8 @@ function set_errno( err ){
  */
 function scrape_collection( coll, query, opt, callback ){
 
-    console.log("Mongo Query: " + coll + ": " + JSON.stringify(query) + " " + JSON.stringify(opt) );
+    var dbg = "Query: " + coll + ": " + JSON.stringify(query) + " " + JSON.stringify(opt);
+    console.log( dbg );
 
     db.collection( coll ).find( query, opt, function(err, cursor){
         if( err ) throw err;
@@ -54,30 +59,30 @@ function scrape_collection( coll, query, opt, callback ){
 
 function insert_document( coll, element, opt, callback ){
 
-    console.log("Mongo Insert: " + coll + ": " + JSON.stringify(element) );
+    var dbg = "Insert: " + coll + ": " + JSON.stringify(element);
 
     db.collection( coll ).insert( element, opt, function(err){
-        var ret = set_errno(err);
+        var ret = set_errno(err, dbg);
         callback(ret);
     })
 }
 
 function save_document( coll, element, opt, callback ){
 
-    console.log("Mongo Save: " + coll + ": " + JSON.stringify(element) + " " + JSON.stringify(opt) );
+    var dbg = "Save: " + coll + ": " + JSON.stringify(element) + " " + JSON.stringify(opt);
 
     db.collection( coll ).save( element, opt, function(err){
-        var ret = set_errno(err);
+        var ret = set_errno(err, dbg);
         callback(ret);
     })
 }
 
 function update_document( coll, element, update, opt, callback ){
 
-    console.log("Mongo Update: " + coll + ": " + JSON.stringify(element) + " " + JSON.stringify(opt) );
+    var dbg =  "Update: " + coll + ": " + JSON.stringify(element) + " " + JSON.stringify(opt);
 
     db.collection( coll ).update( element, update, opt, function(err){
-        var ret = set_errno(err);
+        var ret = set_errno(err, dbg);
         callback(ret);
     })
 }
@@ -128,16 +133,9 @@ function get_security_key()
 function valid_hash( digest, data )
 {
     var hash_internal = compute_hash( security_key + data );
-    var hash_external = compute_hash( digest     + data );
+    console.log("Hashbang: " + hash_internal + " " + digest + "\n" );
 
-    console.log("Hashbang: " + hash_internal + " " + hash_external + "\n" );
-
-    if( hash_internal != hash_external ){
-        throw "Inconsistent hash";     // enabled for debugging
-        //return false;
-    }
-
-    return true;
+    return hash_internal == digest;
 }
 
 function setup_api()
@@ -185,7 +183,7 @@ function setup_api()
             update_document( 'user_game_awards',
                            { user_id : Number(user_id), app_id : Number(app_id) },
                            { $addToSet: { awards : achievement } },
-                           {},
+                           { w : 1 },
                            function( results ){
                              res.send( results );
                            });
@@ -242,7 +240,7 @@ function setup_api()
             update_document( 'user_game_score',
                 { user_id : Number(user_id), app_id : Number(app_id) },
                 { $addToSet: { context : context }, $inc : { score: Number(score) } },
-                { upsert : true },
+                { upsert : true, w : 1 },
                 function( results ){
                     res.send( results );
                 });
