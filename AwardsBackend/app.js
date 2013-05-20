@@ -106,27 +106,25 @@ function get_db_object(){
         console.log("Connected to mongo.");
 
         db = database;
-
-        get_security_key()
+        get_security_keys()
     });
 }
 
-function get_security_key()
+var app_key = {};
+
+function get_security_keys()
 {
     if( db == null ){
         throw "invalid db";
     }
 
-    db.collection('shadow').findOne( {}, function( err, doc ){
+    scrape_collection( 'shadow', {}, {}, function( elem ){
 
-        if( doc == null ){
-            console.log("No sec. key in the db");
-        }
+          for( var i = elem.length - 1; i >= 0; --i ){
+              app_key[ elem[i].app_id ] = elem[i].keys;
+          }
 
-        security_key = doc.key;
-        console.log("Got key " + security_key + " !" );
-
-        setup_api();
+          setup_api();
     });
 }
 
