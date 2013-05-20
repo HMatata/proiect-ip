@@ -59,10 +59,24 @@ mongo.connect("mongodb://localhost:27017/content", function(err, db) {
                 collection.find( {}, function(err, cursor){
                     if(err) throw err;
 
+
                     cursor.toArray( function(err, items){
                         if(err) throw err;
 
-                        socket.emit('games:list', items );
+                        var result = [];
+                        for( var i = 0, len = items.length; i < len; i+=3 )
+                        {
+                            var chk = {};
+                            chk[i]   = items[i];
+                            chk[i+1] = items[i+1];
+                            chk[i+2] = items[i+2];
+
+                            result.push( chk );
+                        }
+
+                        console.log(result);
+
+                        socket.emit('games:list', result );
 
                     });
                 });
