@@ -5,6 +5,8 @@ var express = require('express'),
 	io = require('socket.io').listen(server),
     mongo = require('mongodb').MongoClient,
     fs = require('fs');
+
+var PP = require('prettyprint');
     //cookie_parser = require('cookie');
 
 app.use(express.static(__dirname + '/public'));
