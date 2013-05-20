@@ -131,7 +131,6 @@ function valid_hash( digest, app_id, data )
 {
     var hash_internal = compute_hash( app_key[app_id] + data );
     console.log("Hashbang: " + hash_internal + " " + digest + "\n" );
-
     return hash_internal == digest;
 }
 

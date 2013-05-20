@@ -49,16 +49,13 @@ mongo.connect("mongodb://localhost:27017/content", function(err, db) {
 
     io.sockets.on('connection', function (socket) {
         socket.emit('init', {});
-        //TODO: replace this with relevant code to get the games from the database
         socket.on('games:list', function () {
-
 
             db.collection('games', function(err, collection){
                 if(err) throw err;
 
                 collection.find( {}, function(err, cursor){
                     if(err) throw err;
-
 
                     cursor.toArray( function(err, items){
                         if(err) throw err;
