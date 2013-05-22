@@ -1,19 +1,19 @@
 <div class="row-fluid">
-	<div class="span12">
-
-		<div class="thumbnail">
-			<h2 class="text-center">
-				<a href="#/game/{{game.id}}">{{game.name}}</a>
-			</h2>
-
-			<img class="img-polaroid" src="{{game.image}}" alt="{{game.name}}">
-
-			<div class="game_desc">{{game.description}}</div>
-
-			<div>
-				<a class="btn" href="#"> Play </a>
+	<div class="hero-unit span12">
+		<h2 class="text-center">
+			<a href="#/game/{{game.id}}">{{game.name}}</a>
+		</h2>
+		<div class="span12">
+			<div class="span3">
+				<img width="180px" class="img-polaroid left" src="{{game.image}}" alt="{{game.name}}">
 			</div>
-
+			<div class="span9">
+				<div class="game_desc">{{game.description}}</div>
+			</div>
+		</div>
+		
+		<div class="span12">
+			<iframe width="{{game.width}}" height="{{game.height}}" src="{{game.url}}"></iframe>
 		</div>
 	</div>
 </div>

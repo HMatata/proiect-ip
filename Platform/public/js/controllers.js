@@ -59,8 +59,6 @@ Controllers.userProfile = function userProfile($scope, $http, $location, localSt
         localStorageService.add('user', JSON.stringify($scope.user));
 		$location.path('/home');
 	};
-;
-
 }
 
 Controllers.gameInstance = function gameInstance($scope, $location, socket, $routeParams) {
@@ -68,6 +66,9 @@ Controllers.gameInstance = function gameInstance($scope, $location, socket, $rou
     socket.emit('games:gameId', $routeParams.gameId);
     socket.on('games:gameId', function (data) {
         $scope.game = data;
+        $scope.game.width = 600;
+        $scope.game.height = 800;
+        $scope.game.url = 'http://localhost:8080';
         console.log("Data", data);
     });
 }
