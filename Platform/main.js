@@ -78,6 +78,15 @@ mongo.connect("mongodb://localhost:27017/content", function(err, db) {
                     });
                 });
             });
+        });
+
+        socket.on('games:gameId', function (data) {
+
+            $scope.gamesgroup = data;
+
+            db.collection( 'games' ).findOne( { id : data }, function( err, item ){
+                socket.emit('games:gameId', item );
+            });
 
         });
 

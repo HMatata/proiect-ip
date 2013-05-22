@@ -32,25 +32,17 @@ Controllers.main = function main($scope, $rootScope, $route, $location, socket, 
 
 }
 
-Controllers.games = function games($scope, socket, Games) {
+Controllers.games = function games($scope, socket) {
 
-    console.log("games called", $scope.gamesgroup);
-    socket.on('init', function () {
-    });
-
-    $scope.gamesgroup = Games.query();
     socket.emit('games:list', {});
     socket.on('games:list', function (data) {
-
+    	console.log("Game list", data);
         $scope.gamesgroup = data;
-
     });
-
-
 
 }
 
-Controllers.userProfile = function userProfile($scope, $http, $location, localStorageService,socket) {
+Controllers.userProfile = function userProfile($scope, $http, $location, localStorageService, socket) {
 
     var user = JSON.parse(localStorageService.get('user'));
     if (!user)
@@ -71,17 +63,14 @@ Controllers.userProfile = function userProfile($scope, $http, $location, localSt
 
 }
 
-Controllers.gameInstance = function gameInstance($scope, $location) {
+Controllers.gameInstance = function gameInstance($scope, $location, socket, $routeParams) {
 
-
-
-
-
-
+    socket.emit('games:gameId', $routeParams.gameId);
+    socket.on('games:gameId', function (data) {
+        $scope.game = data;
+        console.log("Data", data);
+    });
 }
-
-
-
 
 
 Controllers.signup = function signup($scope, $location, socket) {
@@ -118,8 +107,6 @@ Controllers.login = function login($scope, $location, socket, localStorageServic
     $scope.login = function () {
        console.log($scope.user);
        socket.emit('user:auth', $scope.user);
-
-
     }
 }
 
