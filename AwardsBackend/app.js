@@ -136,9 +136,6 @@ function valid_hash( digest, app_id, data )
 
 function setup_api()
 {
-    /*
-        Example query : /get_achievements/1/1/unbreakable_secure_key
-     */
     app.get('/get_achievements/:user_id/:app_id/:digest', function(req, res){
 
         var digest   = req.params.digest;
@@ -248,6 +245,58 @@ function setup_api()
         }
 
     });
+
+    /*
+        get_user_info/1/1/Q9emLM6kjQE+IqGmkOdpCPz1abw=
+     */
+
+    app.get('/get_user_info/:user_id/:app_id/:digest', function( req, res ){
+
+        var digest    = req.params.digest;
+        var app_id    = req.params.app_id;
+        var user_id   = req.params.user_id;
+
+        var data = app_id + user_id;
+
+        var ans = {};
+
+        if( valid_hash( digest, app_id, data ) ){
+
+            var user_app = { user_id : Number(user_id), app_id : Number(app_id) };
+
+            scrape_collection( 'users',
+                { _id : Number(user_id) },
+                { prefs: 1 },
+                function( results ){
+
+                     ans.prefs = results[0].prefs;
+
+                     scrape_collection( 'user_game_data',
+                        user_app,
+                        { data : 1 },
+                         function( results ){
+
+                            ans.game_data = results[0].data;
+                            scrape_collection( 'user_game_score',
+                              user_app,
+                              { score : 1, context : 1 },
+                              function( results ){
+                                  ans.score   = results[0].score;
+                                  ans.context = results[0].context;
+                                  res.send( ans );
+                            });
+                     });
+                }
+            );
+        }
+        else
+        {
+            res.send( { ok : "Invalid Hash" } );
+        }
+
+    });
+
+
 
 }
 
