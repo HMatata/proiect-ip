@@ -6,7 +6,7 @@
 
 
 
-var app = angular.module('WebAppModule', ['gameService', 'LocalStorageModule']);
+var app = angular.module('WebAppModule', ['LocalStorageModule']);
 app.config( function($routeProvider) {
 	$routeProvider.
 		when('/home', { redirectTo: '/games'}).
@@ -19,10 +19,7 @@ app.config( function($routeProvider) {
 		otherwise({ redirectTo: '/home'});
 });
 
-
-
-
-
+/*
 angular.module('gameService', ['ngResource']).factory('Games', function($resource) {
 	return $resource('games/:gameId.json', {}, {
 		query: {
@@ -34,3 +31,4 @@ angular.module('gameService', ['ngResource']).factory('Games', function($resourc
 		}
 	});
 });
+*/
