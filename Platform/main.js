@@ -79,11 +79,6 @@ mongo.connect("mongodb://localhost:27017/content", function(err, db) {
                 });
             });
 
-//            fs.readFile('./games/games.json',
-//                { encoding: 'utf8'}, function (err, data){
-//                if (err) throw err;
-//                socket.emit('games:list', JSON.parse(data));
-//            });
         });
 
         socket.on('user:add', function(data) {
@@ -94,6 +89,7 @@ mongo.connect("mongodb://localhost:27017/content", function(err, db) {
             db.collection('users').insert(data, {w:1}, function(err, result) {
                 if (err) {
                     console.log("Error:",err);
+                    socket.emit('user:signup', {'msg':err});
                     return;
                 }
                 console.log(result);
@@ -113,6 +109,16 @@ mongo.connect("mongodb://localhost:27017/content", function(err, db) {
             });
         });
 
+        socket.on('user:update', function (data) {
+            db.collection('users').update({_id: data._id}, data, {w:1}, function(err, doc) {
+               if (doc == null) {
+                   socket.emit('user:error', {msg: "Something failed badly."});
+               }
+            });
+
+
+        });
+
 
         // broadcast a user's message to other users
         socket.on('send:message', function (data) {
@@ -120,6 +126,8 @@ mongo.connect("mongodb://localhost:27017/content", function(err, db) {
                 text: data.message
             });
         });
+
+
 
         // clean up when a user leaves, and broadcast it to other users
         socket.on('disconnect', function () {

@@ -14,24 +14,21 @@ Controllers.main = function main($scope, $rootScope, $route, $location, socket, 
     //if $scope.localsocket.emit('auth', )
 	$scope.$route = $route;
 
-    console.log("called the main controller");
-    var user_info = JSON.parse(localStorageService.get('user'));
-    console.log("Scope:", $scope);
-    if (user_info != null)
-        $scope.username = user_info.username;
-    else
-        $scope.username = "Guest";
+
 
     $rootScope.$on('userdata', function () {
         var user_info = JSON.parse(localStorageService.get('user'));
         console.log("Scope:", $scope);
-        if (user_info != null)
+        if (user_info != null) {
             $scope.username = user_info.username;
-        else
+            $scope.logout = "Logout";
+        } else {
             $scope.username = "Guest";
+            $scope.logout = "Login";
+        }
     });
-    console.log(user_info);
 
+    $scope.$emit('userdata');
 
 }
 
@@ -56,16 +53,15 @@ Controllers.userProfile = function userProfile($scope, $http, $location, localSt
     angular.copy(user, $scope.user);
     console.log("Scope user object:",$scope.user);
 
-	$scope.cancel = function() {
-		$scope.form = angular.copy($scope.person);
-	};
 
 	$scope.save = function() {
-		angular.copy($scope.form, $scope.person);
+
+		socket.emit('user:update', $scope.user);
+        localStorageService.remove('user');
+        localStorageService.add('user', JSON.stringify($scope.user));
 		$location.path('/home');
 	};
-
-	$scope.cancel();
+;
 
 }
 
@@ -99,6 +95,8 @@ Controllers.signup = function signup($scope, $location, socket) {
 
 Controllers.login = function login($scope, $location, socket, localStorageService) {
 
+    localStorageService.remove('user');
+    $scope.$emit('userdata');
     socket.on('user:identify', function (data){
         console.log("Identified as:", data);
         localStorageService.add('user',JSON.stringify(data));
