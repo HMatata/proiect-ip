@@ -16,7 +16,8 @@
 			<input id="prependedInput" type="text" placeholder="{{user.nickname}}">
 		</div>
 
-		<textarea rows="3"> {{user.about}}</textarea>
-
+		<label>Description</label>
+		<textarea rows="3" class="span12"> {{user.about}}</textarea>
+		<button type="button" class="btn btn-primary" ng-click="editprofile()" data-loading-text="Loading...">Save</button>
 	</div>
 </div>

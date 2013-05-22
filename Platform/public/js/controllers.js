@@ -39,8 +39,6 @@ Controllers.games = function games($scope, socket, Games) {
 
     console.log("games called", $scope.gamesgroup);
     socket.on('init', function () {
-        console.log("merge");
-
     });
 
     $scope.gamesgroup = Games.query();
@@ -79,7 +77,16 @@ Controllers.userProfile = function userProfile($scope, $http, $location, localSt
 
 Controllers.gameInstance = function gameInstance($scope, $location) {
 
+
+
+
+
+
 }
+
+
+
+
 
 Controllers.signup = function signup($scope, $location, socket) {
     socket.on('user:signup', function (data) {
