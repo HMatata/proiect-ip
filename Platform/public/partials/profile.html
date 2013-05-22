@@ -13,11 +13,14 @@
 
 		<div class="input-prepend">
 			<span class="add-on">Nick name</span>
-			<input id="prependedInput" type="text" placeholder="{{user.nickname}}">
+			<input id="prependedInput" type="text" ng-model="user.nickname" placeholder="{{user.nickname}}">
 		</div>
-
+        <div class="input-prepend">
+            <span class="add-on">Email</span>
+            <input id="prependedInput" type="text" ng-model="user.email" placeholder="{{user.email}}">
+        </div>
 		<label>Description</label>
-		<textarea rows="3" class="span12"> {{user.about}}</textarea>
-		<button type="button" class="btn btn-primary" ng-click="editprofile()" data-loading-text="Loading...">Save</button>
+		<textarea ng-model="user.about" rows="3" class="span12"> {{user.about}}</textarea>
+		<button type="button" class="btn btn-primary" ng-click="save()" data-loading-text="Loading...">Save</button>
 	</div>
 </div>
