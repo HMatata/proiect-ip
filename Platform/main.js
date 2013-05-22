@@ -80,12 +80,12 @@ mongo.connect("mongodb://localhost:27017/content", function(err, db) {
             });
         });
 
-        socket.on('games:list', function (data) {
+        socket.on('games:gameId', function (data) {
 
             $scope.gamesgroup = data;
 
             db.collection( 'games' ).findOne( { id : data }, function( err, item ){
-                socket.emit('games:list', item );
+                socket.emit('games:gameId', item );
             });
 
         });
