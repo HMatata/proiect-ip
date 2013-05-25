@@ -296,7 +296,30 @@ function setup_api()
 
     });
 
+    /*
+        Here I just assume feedback is a magic blob with all the data we might want
+        ( like user_id/nickname/rating )
+     */
 
+    app.get('/add_feedback/:feedback', function(req, res) {
+
+        var feedback = req.params.feedback;
+        insert_document( 'feedback', { content: feedback, date : new Date() } , {}, function( result ){
+            res.send(result);
+        });
+    });
+
+    /*
+       Retrieves a json array with feedback items
+     */
+
+    app.get('/get_feedback', function(req,res){
+
+       scrape_collection('feedback', {}, {}, function(results){
+          res.send(results);
+       });
+
+    });
 
 }
 
