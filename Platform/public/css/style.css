@@ -62,6 +62,13 @@ a:hover {
  * Footer Section
  */
 
+#feedback {
+}
+
+#feedback .inputarea {
+	width: 96%;	
+}
+
 #footer {
 	height: 50px;
 	width: 100%;

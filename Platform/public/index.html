@@ -70,48 +70,55 @@
 			<div class="row-fluid">
 				<div class="span2 left-menu">
 					<ul class="nav nav-tabs nav-stacked level1Nav affix span2 hidden-phone ">
-					<li>
-						<a title="" href="#home">
-							<i class="icon-chevron-right pull-right"></i>
-							<i class="icon-time"></i>
-							  Home
-						</a>
-					</li>
-					<li>
-						<a title="" href="#games">
-							<i class="icon-chevron-right pull-right"></i>
-							<i class="icon-list-alt"></i>
-							  Games
-						</a>
-					</li>
-					<li>
-						<a title="" href="#profile">
-							<i class="icon-chevron-right pull-right"></i>
-							<i class="icon-bullhorn"></i>
-							  Profile
-						</a>
-					</li>
-					<li>
-						<a title="" href="#chat">
-							<i class="icon-chevron-right pull-right"></i>
-							<i class="icon-edit"></i>
-							  Chat
-						</a>
-					</li>
-					<li>
-						<a title="" href="#login">
-							<i class="icon-chevron-right pull-right"></i>
-							<i class="icon-user"></i>
-							  Login
-						</a>
-					</li>
-					<li>
-						<a title="" href="#signup">
-							<i class="icon-chevron-right pull-right"></i>
-							<i class="icon-user"></i>
-							  SignUp
-						</a>
-					</li>
+						<li>
+							<a title="" href="#home">
+								<i class="icon-chevron-right pull-right"></i>
+								<i class="icon-time"></i>
+								  Home
+							</a>
+						</li>
+						<li>
+							<a title="" href="#games">
+								<i class="icon-chevron-right pull-right"></i>
+								<i class="icon-list-alt"></i>
+								  Games
+							</a>
+						</li>
+						<li>
+							<a title="" href="#profile">
+								<i class="icon-chevron-right pull-right"></i>
+								<i class="icon-bullhorn"></i>
+								  Profile
+							</a>
+						</li>
+						<li>
+							<a title="" href="#chat">
+								<i class="icon-chevron-right pull-right"></i>
+								<i class="icon-edit"></i>
+								  Chat
+							</a>
+						</li>
+						<li>
+							<a title="" href="#login">
+								<i class="icon-chevron-right pull-right"></i>
+								<i class="icon-user"></i>
+								  Login
+							</a>
+						</li>
+						<li>
+							<a title="" href="#signup">
+								<i class="icon-chevron-right pull-right"></i>
+								<i class="icon-user"></i>
+								  SignUp
+							</a>
+						</li>
+						<li>
+							<a title="" href="#feedback" data-toggle="modal">
+								<i class="icon-chevron-right pull-right"></i>
+								<i class="icon-user"></i>
+								  Feedback
+							</a>
+						</li>
 					</ul>
 				</div>
 
@@ -121,9 +128,23 @@
 					</div>
 				</div>
 			</div>
-
 			<hr>
 
+		</div>
+
+		<div id="feedback" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+				<h3 id="feedbacklabel">Feedback</h3>
+			</div>
+			<div class="modal-body">
+				<p>Like it or not, tell us what you think </p>
+				<textarea rows="3" class="inputarea"></textarea>
+			</div>
+			<div class="modal-footer">
+				<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+				<button class="btn btn-primary" data-dismiss="modal"> Send </button>
+			</div>
 		</div>
 		<footer id="footer">
 			<p>&copy; HakunaMatata 2013</p>
