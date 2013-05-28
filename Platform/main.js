@@ -4,7 +4,10 @@ var express = require('express'),
 	server = require('http').createServer(app),
 	io = require('socket.io').listen(server),
     mongo = require('mongodb').MongoClient,
-    fs = require('fs');
+    fs = require('fs'),
+    nodemailer = require("nodemailer");
+
+var transport = nodemailer.createTransport("sendmail");
 
 var PP = require('prettyprint');
     //cookie_parser = require('cookie');
@@ -89,6 +92,7 @@ mongo.connect("mongodb://localhost:27017/content", function(err, db) {
         socket.on('user:add', function(data) {
             data.password = hash(data.password);
             data.image = gravatar(data.email);
+            data.confirmed = 0;
             console.log(data);
 
             db.collection('users').insert(data, {w:1}, function(err, result) {
@@ -97,8 +101,15 @@ mongo.connect("mongodb://localhost:27017/content", function(err, db) {
                     socket.emit('user:signup', {'msg':err});
                     return;
                 }
-                console.log(result);
+                transport.sendMail({
+                    from: "proiect-ip@tudalex.com",
+                    to: result.email,
+                    subject: "Verify your email",
+                    text: "http://dev5.tudalex.com/verify_email/"+result._id
+                });
+                console.log("Result",result);
                 socket.emit('user:signup', {msg:'ok'});
+
             });
         });
 
