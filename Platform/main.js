@@ -106,6 +106,12 @@ mongo.connect("mongodb://localhost:27017/content", function(err, db) {
                     to: result.email,
                     subject: "Verify your email",
                     text: "http://dev5.tudalex.com/verify_email/"+result._id
+                }, function(error, response){
+                    if(error){
+                        console.log(error);
+                    }else{
+                        console.log("Message sent: " + response.message);
+                    }
                 });
                 console.log("Result",result);
                 socket.emit('user:signup', {msg:'ok'});
