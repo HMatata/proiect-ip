@@ -109,7 +109,8 @@ mongo.connect("mongodb://localhost:27017/content", function(err, db) {
                     from: "me@tudalex.com",
                     to: result[0].email,
                     subject: "Verify your email",
-                    text: "http://dev5.tudalex.com/verify_email/"+result[0]._id
+                    generateTextFromHTML: true,
+                    html: "Va puteti activa contul facand click pe acest link: <a href='http://dev5.tudalex.com/verify_email/"+result[0]._id+"'>http://dev5.tudalex.com/verify_email/"+result[0]._id+"</a>"
                 };
                 console.log("Email", email);
                 transport.sendMail(email, function(error, response){
