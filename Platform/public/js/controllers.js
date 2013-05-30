@@ -169,3 +169,12 @@ Controllers.chat = function chat($scope, socket) {
     };
 }
 
+Controllers.verify = function verify($scope, $location, socket, $routeParams) {
+
+    socket.emit('user:verify', $routeParams.id);
+    socket.on('user:verify', function (data) {
+        //TODO: maybe print something here
+        $location.path('/login');
+    });
+}
+

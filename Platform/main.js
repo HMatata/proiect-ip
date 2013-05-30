@@ -4,14 +4,28 @@ var express = require('express'),
 	server = require('http').createServer(app),
 	io = require('socket.io').listen(server),
     mongo = require('mongodb').MongoClient,
+    ObjectID = require('mongodb').ObjectID,
     fs = require('fs'),
     nodemailer = require("nodemailer");
 
+// Sendmail
+//var transport = nodemailer.createTransport("sendmail");
+
+// Using gmail. It works. Let it be.
+var transport = nodemailer.createTransport("SMTP",{
+    service: "Gmail",
+    auth: {
+        user: "proiect-ip@tudalex.com",
+        pass: "placintacumere"
+    }
+});
+// Amazon SES service config
+// Uncomment daca vreti sa il folositi
 /*var transport = nodemailer.createTransport("SES", {
     AWSAccessKeyID: "AKIAIFQLXPD7EUWWS3VA",
     AWSSecretKey: "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"
 });*/
-var transport = nodemailer.createTransport("sendmail");
+
 
 var PP = require('prettyprint');
     //cookie_parser = require('cookie');
@@ -96,7 +110,7 @@ mongo.connect("mongodb://localhost:27017/content", function(err, db) {
         socket.on('user:add', function(data) {
             data.password = hash(data.password);
             data.image = gravatar(data.email);
-            data.confirmed = 0;
+            data.confirmed = false;
             console.log(data);
 
             db.collection('users').insert(data, {w:1}, function(err, result) {
@@ -106,11 +120,11 @@ mongo.connect("mongodb://localhost:27017/content", function(err, db) {
                     return;
                 }
                 var email = {
-                    from: "me@tudalex.com",
+                    from: "proiect-ip@tudalex.com",
                     to: result[0].email,
                     subject: "Verify your email",
                     generateTextFromHTML: true,
-                    html: "Va puteti activa contul facand click pe acest link: <a href='http://dev5.tudalex.com/verify_email/"+result[0]._id+"'>http://dev5.tudalex.com/verify_email/"+result[0]._id+"</a>"
+                    html: "Va puteti activa contul facand click pe acest link: <a href='http://dev5.tudalex.com/#/verify_email/"+result[0]._id+"'>http://dev5.tudalex.com/#/verify_email/"+result[0]._id+"</a>"
                 };
                 console.log("Email", email);
                 transport.sendMail(email, function(error, response){
@@ -128,6 +142,7 @@ mongo.connect("mongodb://localhost:27017/content", function(err, db) {
 
         socket.on('user:auth', function(data) {
             data.password = hash(data.password);
+            data.confirmed = true; // This checks if the mail account was confirmed
             db.collection('users').findOne(data, function (err, doc) {
                 if (doc == null) {
                     socket.emit('user:error', {msg:"Authentification failed."});
@@ -139,13 +154,26 @@ mongo.connect("mongodb://localhost:27017/content", function(err, db) {
         });
 
         socket.on('user:update', function (data) {
-            db.collection('users').update({_id: data._id}, data, {w:1}, function(err, doc) {
+            console.log(data);
+            var id = data._id;
+            delete data._id;
+            db.collection('users').update({_id: ObjectID(id)}, data, {w:1}, function(err, doc) {
                if (doc == null) {
                    socket.emit('user:error', {msg: "Something failed badly."});
                }
             });
 
 
+        });
+
+        socket.on('user:verify', function (data) {
+            console.log("Verify email for id", data);
+            db.collection('users').update({_id: ObjectID(data)}, {$set: {confirmed: true}}, {w:1}, function(err, doc) {
+                if (doc == null) {
+                    socket.emit('user:verify_error', {msg: "Something failed badly."});
+                }
+                socket.emit('user:verify', {});
+            });
         });
 
 

@@ -16,6 +16,7 @@ app.config( function($routeProvider) {
         when('/signup', {templateUrl: 'partials/signup.html', controller: Controllers.signup}).
         when('/login', { templateUrl: 'partials/login.html', controller: Controllers.login}).
         when('/chat:roomId', { templateUrl: 'partials/chat.html', controller: Controllers.chat}).
+        when('/verify_email/:id', {templateUrl: 'partials/verify.html', controller: Controllers.verify}).
 		otherwise({ redirectTo: '/home'});
 });
 
