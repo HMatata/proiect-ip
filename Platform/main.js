@@ -7,6 +7,10 @@ var express = require('express'),
     fs = require('fs'),
     nodemailer = require("nodemailer");
 
+/*var transport = nodemailer.createTransport("SES", {
+    AWSAccessKeyID: "AKIAIFQLXPD7EUWWS3VA",
+    AWSSecretKey: "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"
+});*/
 var transport = nodemailer.createTransport("sendmail");
 
 var PP = require('prettyprint');
@@ -101,12 +105,14 @@ mongo.connect("mongodb://localhost:27017/content", function(err, db) {
                     socket.emit('user:signup', {'msg':err});
                     return;
                 }
-                transport.sendMail({
-                    from: "proiect-ip@tudalex.com",
-                    to: result.email,
+                var email = {
+                    from: "me@tudalex.com",
+                    to: result[0].email,
                     subject: "Verify your email",
                     text: "http://dev5.tudalex.com/verify_email/"+result._id
-                }, function(error, response){
+                };
+                console.log("Email", email);
+                transport.sendMail(email, function(error, response){
                     if(error){
                         console.log(error);
                     }else{
