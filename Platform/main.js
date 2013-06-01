@@ -19,12 +19,7 @@ var transport = nodemailer.createTransport("SMTP",{
         pass: "placintacumere"
     }
 });
-// Amazon SES service config
-// Uncomment daca vreti sa il folositi
-/*var transport = nodemailer.createTransport("SES", {
-    AWSAccessKeyID: "AKIAIFQLXPD7EUWWS3VA",
-    AWSSecretKey: "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"
-});*/
+// Removed amazon ses, Gmai should be enough.
 
 
 var PP = require('prettyprint');
@@ -66,7 +61,6 @@ mongo.connect("mongodb://localhost:27017/content", function(err, db) {
         redisSub: sub,
         redisClient: client
     }));
-
 
     io.sockets.on('connection', function (socket) {
         socket.emit('init', {});
@@ -176,15 +170,12 @@ mongo.connect("mongodb://localhost:27017/content", function(err, db) {
             });
         });
 
-
         // broadcast a user's message to other users
         socket.on('send:message', function (data) {
             socket.broadcast.emit('send:message', {
                 text: data.message
             });
         });
-
-
 
         // clean up when a user leaves, and broadcast it to other users
         socket.on('disconnect', function () {
