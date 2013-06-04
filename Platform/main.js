@@ -13,7 +13,7 @@ var express = require('express'),
 //var transport = nodemailer.createTransport("sendmail");
 
 // Using gmail. It works. Let it be.
-var transport = nodemailer.createTransport("SMTP",{
+var transport = nodemailer.createTransport("SMTP", {
     service: "Gmail",
     auth: {
         user: "proiect-ip@tudalex.com",

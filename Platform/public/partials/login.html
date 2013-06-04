@@ -1,18 +1,30 @@
 <div class="row-fluid">
-    <div class="span4">
-        <h3>Login</h3>
-        <form novalidate>
-            <div class="input-prepend">
-                <span class="add-on">Username</span>
-                <input id="prependedInput" ng-model="user.username" type="text">
-            </div>
+	<div class="span4">
+		<div class="row-fluid">
+			<h3>Login</h3>
+			<form novalidate>
+				<div class="span12">
+					<div class="input-prepend">
+						<span class="add-on">Username</span>
+						<input id="prependedInput" ng-model="user.username" type="text">
+					</div>
+			
+					<div class="input-prepend">
+						<span class="add-on">Password</span>
+						<input id="prependedInput" ng-model="user.password" type="password">
+					</div>
+				</div>
+				<div class="row-fluid">
+					<button type="button" class="btn btn-primary" ng-click="login()" data-loading-text="Loading...">Login</button>
+					<button type="button" class="btn btn-primary" ng-click="reset()">Forgot password</button>
+				</div>
+			</form>
+		</div>
 
-            <div class="input-prepend">
-                <span class="add-on">Password</span>
-                <input id="prependedInput" ng-model="user.password" type="password">
-            </div>
-            <button type="button" class="btn btn-primary" ng-click="login()" data-loading-text="Loading...">Login</button>
-            <button type="button" class="btn btn-primary" ng-click="reset()">Forgot password</button>
-        </form>
-    </div>
+		<div class="row-fluid">
+			<h3>Sign UP</h3>
+			<a href="#signup" class="btn btn-primary" > Create an account </a>
+		</div>
+
+	</div>
 </div>
