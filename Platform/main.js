@@ -8,7 +8,8 @@ var express = require('express'),
     fs = require('fs'),
     nodemailer = require("nodemailer");
 
-// Sendmail
+
+// Sendmail, uncomment for backup purpouses
 //var transport = nodemailer.createTransport("sendmail");
 
 // Using gmail. It works. Let it be.
@@ -19,7 +20,7 @@ var transport = nodemailer.createTransport("SMTP",{
         pass: "placintacumere"
     }
 });
-// Removed amazon ses, Gmai should be enough.
+
 
 
 var PP = require('prettyprint');
