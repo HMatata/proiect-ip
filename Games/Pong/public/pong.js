@@ -33,38 +33,6 @@ Game.loadResource = function loadResource() {
 	Resources.loadImage("./images/grass.jpg", "grass");
 }
 
-Game.connectMultiplayer = function connectMultiplayer() {
-	socket = io.connect('127.0.0.1:8080');
-
-	socket.on('init', function (data) {
-		statsPanel.textContent = "players on the server: " + data.playerss;
-	});
-
-	// sendInformationToServer ...
-	socket.on('initGame', function (data) {
-		Game.playerID = 0;
-		Game.sendSyncData("player1Sync");
-	});
-
-	socket.on('syncGame', function(data){
-		Game.playerID = 1;
-		Game.sendSyncData("player2Sync");
-	});
-
-	socket.on('startGame', function(data) {
-		console.log("RECEIVED ON ", Game.playerID);
-		Game.renderLoop();
-	});
-
-	socket.on('sync', Game.reciveSyncData);
-
-	Game.init();
-	Game.drawFrame();
-	Canvas.setBackground();
-	Canvas.writeMessage("Wait for another player to connect", 0.5, 0.5);
-
-}
-
 Game.init = function init() {
 
 	this.dirx = 0.01 + Math.random();
@@ -105,9 +73,46 @@ Game.reciveSyncData = function reciveSyncData(data) {
 }
 
 Game.waitStart = function waitStart() {
-	Canvas.cleanViewport();
+	Canvas.clearViewport();
 	Canvas.writeMessage("Loading Resources", 0.5, 0.5);
 }
+
+Game.choiceScreen = function choiceScreen() {
+	Game.connectMultiplayer();
+};
+
+
+Game.connectMultiplayer = function connectMultiplayer() {
+	socket = io.connect('127.0.0.1:8080');
+
+	socket.on('init', function (data) {
+		statsPanel.textContent = "players on the server: " + data.playerss;
+	});
+
+	// sendInformationToServer ...
+	socket.on('initGame', function (data) {
+		Game.playerID = 0;
+		Game.sendSyncData("player1Sync");
+	});
+
+	socket.on('syncGame', function(data) {
+		Game.playerID = 1;
+		Game.sendSyncData("player2Sync");
+	});
+
+	socket.on('startGame', function(data) {
+		console.log("RECEIVED ON ", Game.playerID);
+		Game.renderLoop();
+	});
+
+	socket.on('sync', Game.reciveSyncData);
+
+	Game.init();
+	Game.drawFrame();
+	Canvas.setBackground();
+	Canvas.writeMessage("Wait for another player to connect", 0.5, 0.5);
+}
+
 
 Game.renderLoop = function renderLoop() {
 
@@ -117,7 +122,7 @@ Game.renderLoop = function renderLoop() {
 		requestAnimFrame(Game.renderLoop);
 
 	Engine.update();
-	Canvas.cleanViewport();
+	Canvas.clearViewport();
 	Game.updatePlayer();
 	Game.sendSyncData("sync");
 	Game.drawFrame();
@@ -126,9 +131,11 @@ Game.renderLoop = function renderLoop() {
 		Canvas.setBackground();
 
 		if (Game.status != Game.playerID)
-			Canvas.writeMessage("YOU WIN", 0.5, 0.5);
+			Canvas.writeMessage("YOU WIN", 0.5, 0.4);
 		else
-			Canvas.writeMessage("YOU LOSE", 0.5, 0.5);
+			Canvas.writeMessage("YOU LOSE", 0.5, 0.4);
+
+		Canvas.writeMessage("Click to start again", 0.5, 0.5);
 	}
 }
 
@@ -232,7 +239,7 @@ var Canvas = {
 		this.ctx = Engine.ctx;
 	},
 
-	cleanViewport : function cleanViewport () {
+	clearViewport : function clearViewport () {
 		this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.width);
 	},
 
