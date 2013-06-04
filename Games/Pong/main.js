@@ -17,9 +17,10 @@ var Game = {
 	users : [],
 	rooms : {},
 	lastRoom : null,
+	updateID : null,
 	ball : {
-		speed : 0.005,
-		increment :0.000025
+		speed : 0.01,
+		increment :0.00005
 	}
 }
 
@@ -42,9 +43,6 @@ Game.init = function init(room) {
 
 Game.update = function (room) {
 
-	if (Game.rooms[room].data.status !== -1)
-		return;
-
 	var data = Game.rooms[room].data;
 	var posx = data.ball.x + Game.ball.speed * data.dirx;
 	var posy = data.ball.y + Game.ball.speed * data.diry;
@@ -59,6 +57,11 @@ Game.update = function (room) {
 
 	if (posy < 0.05)
 		data.status = 1;
+
+	if (data.status !== -1) {
+		console.log("Game ended! Player", data.status, "wins!");
+		clearInterval(Game.rooms[room].data.updateID);
+	}
 
 	if (Math.abs(posy - 0.9) < 0.05 &&
 		Math.abs(posx - data.players[0].pos) < 0.15)
@@ -124,11 +127,14 @@ io.sockets.on('connection', function (socket) {
 	});
 
 	socket.on('player2Sync', function(data) {
+		
+		console.log("Connected player 2");
+		
 		Game.rooms[room].data.players[1] = data;
 		Game.init(room);
 		io.sockets.in(room).emit('startGame', Game.rooms[room].data);
 		
-		setInterval(Game.update, 16, room);
+		Game.rooms[room].data.updateID = setInterval(Game.update, 16, room);
 	});
 
 	socket.on('sync', function(data) {
