@@ -18,6 +18,11 @@ a:hover {
 	text-decoration: none;
 }
 
+#content_container {
+	min-height: 400px;
+}
+
+
 /*
  * Header Section
  */
