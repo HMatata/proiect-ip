@@ -109,6 +109,11 @@ Controllers.login = function login($scope, $location, socket, localStorageServic
        console.log($scope.user);
        socket.emit('user:auth', $scope.user);
     }
+
+    $scope.reset = function () {
+        $location.path('/reset_password');
+    }
+
 }
 
 
