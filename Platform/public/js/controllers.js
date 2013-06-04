@@ -178,3 +178,14 @@ Controllers.verify = function verify($scope, $location, socket, $routeParams) {
     });
 }
 
+Controllers.reset_password = function reset_password($scope, $location, socket) {
+    socket.on('user:reset_passsword', function (data) {
+        console.log(data);
+    });
+    $scope.reset = function()  {
+        console.log("resetting a password");
+        socket.emit('user:reset_password', $scope.email);
+    }
+
+}
+

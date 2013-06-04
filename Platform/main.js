@@ -169,6 +169,34 @@ mongo.connect("mongodb://localhost:27017/content", function(err, db) {
             });
         });
 
+
+        socket.on('user:reset_password', function (data) {
+            console.log("Resetting password for email", data);
+            var new_password = crypto.pseudoRandomBytes(16).toString('base64').replace("/",'|').replace('+', '-');
+            var new_pass_hash = hash(new_password);
+            db.collection('users').update( {email: data }, {$set: { password: new_pass_hash}}, {w:1}, function (err, result) {
+
+                if (result == null) {
+                    socket.emit('user:reset_password', {msg: "We couldn't find the email specified."});
+                }
+                var email = {
+                    from: "proiect-ip@tudalex.com",
+                    to: data,
+                    subject: "Your password has been reset",
+                    generateTextFromHTML: true,
+                    html: "Parola dumneavoastra a fost resetata. Noua parola este <b>"+new_password+"</b>"
+                };
+                console.log("Email", email);
+                transport.sendMail(email, function(error, response){
+                    if(error){
+                        console.log(error);
+                    }else{
+                        console.log("Message sent: " + response.message);
+                    }
+                });
+            });
+        });
+
         // broadcast a user's message to other users
         socket.on('send:message', function (data) {
             socket.broadcast.emit('send:message', {
