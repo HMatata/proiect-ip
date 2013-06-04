@@ -142,7 +142,7 @@ mongo.connect("mongodb://localhost:27017/content", function(err, db) {
                     socket.emit('user:error', {msg:"Authentification failed."});
                 }
                 else {
-                    socket.emit('user:identify', doc); //TODO: Check if this is actually useful
+                    socket.emit('user:identify', doc);
                 }
             });
         });
