@@ -179,8 +179,9 @@ Controllers.verify = function verify($scope, $location, socket, $routeParams) {
 }
 
 Controllers.reset_password = function reset_password($scope, $location, socket) {
-    socket.on('user:reset_passsword', function (data) {
+    socket.on('user:reset_password', function (data) {
         console.log(data);
+        $location.path('/login')
     });
     $scope.reset = function()  {
         console.log("resetting a password");

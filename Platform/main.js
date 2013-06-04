@@ -172,12 +172,13 @@ mongo.connect("mongodb://localhost:27017/content", function(err, db) {
 
         socket.on('user:reset_password', function (data) {
             console.log("Resetting password for email", data);
-            var new_password = crypto.pseudoRandomBytes(16).toString('base64').replace("/",'|').replace('+', '-');
+            var new_password = crypto.pseudoRandomBytes(15).toString('base64').replace("/",'|').replace('+', '-');
             var new_pass_hash = hash(new_password);
             db.collection('users').update( {email: data }, {$set: { password: new_pass_hash}}, {w:1}, function (err, result) {
 
                 if (result == null) {
-                    socket.emit('user:reset_password', {msg: "We couldn't find the email specified."});
+                    socket.emit('user:reset_password', {msg: "We couldn't find the email specified.", error:true});
+                    return;
                 }
                 var email = {
                     from: "proiect-ip@tudalex.com",
@@ -194,6 +195,7 @@ mongo.connect("mongodb://localhost:27017/content", function(err, db) {
                         console.log("Message sent: " + response.message);
                     }
                 });
+                socket.emit('user:reset_password', {msg: "Password has been reset", error: false});
             });
         });
 
