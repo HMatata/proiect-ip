@@ -68,9 +68,7 @@ var Engine = {
 //		var gameCanvas = document.getElementById('gameCanvas');
 //		gameCanvas.width = newWidth;
 //		gameCanvas.height = newHeight;
-
 	}
-
 }
 
 
@@ -82,11 +80,8 @@ var Resources = {
 	newResourceLoaded : function newResourceLoaded() {
 
 		this.to_load--;
-		if (this.to_load == 0) {
-			//Game.init();
-			//Game.renderLoop();
-			Game.connectMultiplayer();
-		}
+		if (this.to_load == 0)
+			Game.choiceScreen();
 	},
 
 	loadImage : function loadImage(localURL, obj_name) {
