@@ -9,7 +9,7 @@ app.use(express.static(__dirname + '/public'));
 
 app.get('/', function(req, res){});
 
-server.listen(8080);
+server.listen(process.argv[2]);
 
 
 var Game = {
@@ -31,6 +31,7 @@ Game.init = function init(room) {
 	data.ball.x = 0.50;
 	data.ball.y = 0.25;
 	data.status = -1;
+	data.players = [{}, {}];
 
 	data.dirx = 0.01 + Math.random();
 	if (Math.random() < 0.5)
@@ -39,7 +40,10 @@ Game.init = function init(room) {
 
 }
 
-Game.update = function (room, dataX) {
+Game.update = function (room) {
+
+	if (Game.rooms[room].data.status !== -1)
+		return;
 
 	var data = Game.rooms[room].data;
 	var posx = data.ball.x + Game.ball.speed * data.dirx;
@@ -66,7 +70,6 @@ Game.update = function (room, dataX) {
 
 	data.ball.x = posx;
 	data.ball.y = posy;
-	data.players[dataX.id] = dataX;
 
 	io.sockets.in(room).emit('sync', data);
 }
@@ -113,7 +116,6 @@ io.sockets.on('connection', function (socket) {
 	}
 
 	else {
-
 		socket.emit('syncGame', Game.rooms[room].data);
 	}
 
@@ -125,11 +127,12 @@ io.sockets.on('connection', function (socket) {
 		Game.rooms[room].data.players[1] = data;
 		Game.init(room);
 		io.sockets.in(room).emit('startGame', Game.rooms[room].data);
+		
+		setInterval(Game.update, 16, room);
 	});
 
 	socket.on('sync', function(data) {
-		if (Game.rooms[room].data.status == -1)
-			Game.update(room, data);
+		Game.rooms[room].data.players[data.id] = data;
 	});
 
 	socket.on('disconnect', function () {
