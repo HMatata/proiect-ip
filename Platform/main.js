@@ -29,7 +29,7 @@ app.use(express.static(__dirname + '/public'));
 
 app.get('/', function(req, res){});
 
-server.listen(6001);
+server.listen(process.argv[2]);
 
 
 function hash(data) {

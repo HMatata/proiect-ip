@@ -11,7 +11,7 @@ var express = require('express'),
     mongo = require('mongodb').MongoClient,
     fs = require('fs');
 
-app.listen(6002);
+app.listen(process.argv[2]);
 console.log('Listening on port 6002');
 
 app.get('/', function(req, res){
