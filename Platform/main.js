@@ -76,8 +76,7 @@ mongo.connect("mongodb://localhost:27017/content", function(err, db) {
                         if(err) throw err;
 
                         var result = [];
-                        for( var i = 0, len = items.length; i < len; i+=3 )
-                        {
+                        for (var i = 0, len = items.length; i < len; i+=3 ) {
                             var chk = {};
                             chk[i]   = items[i];
                             chk[i+1] = items[i+1];
