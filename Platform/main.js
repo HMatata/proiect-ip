@@ -206,6 +206,24 @@ mongo.connect("mongodb://localhost:27017/content", function(err, db) {
             });
         });
 
+
+        // recieve and handle feedback
+        socket.on('feedback', function (data) {
+            var email = {
+                from: "proiect-ip@tudalex.com",
+                to: "tudalex@gmail.com, gilca.mircea@gmail.com, gabriel.ivanica@gmail.com, alexei6666@gmail.com",
+                subject: "Feedback",
+                text: data
+            };
+            transport.sendMail(email, function(error, response){
+                if(error){
+                    console.log(error);
+                }else{
+                    console.log("Message sent: " + response.message);
+                }
+            });
+        });
+
         // clean up when a user leaves, and broadcast it to other users
         socket.on('disconnect', function () {
             socket.broadcast.emit('user:left', {
