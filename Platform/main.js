@@ -23,7 +23,6 @@ var transport = nodemailer.createTransport("SMTP",{
 
 
 var PP = require('prettyprint');
-    //cookie_parser = require('cookie');
 
 app.use(express.static(__dirname + '/public'));
 
