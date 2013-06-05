@@ -108,6 +108,7 @@ Controllers.signup = function signup($scope, $location, socket) {
 Controllers.login = function login($scope, $location, socket, localStore) {
 
     localStore.remove('user');
+    $scope.alert = "Input your username and password";
     $scope.user = {
         username: "",
         password: ""
@@ -119,6 +120,8 @@ Controllers.login = function login($scope, $location, socket, localStore) {
         //TODO: Print a nice message
     	var x = document.getElementById("login_status");
     	x.className  = "alert alert-error";
+        $scope.alert = "Username or password we're wrong."
+
     });
 
     $scope.login = function () {
