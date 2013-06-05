@@ -7,7 +7,47 @@ var	io = require('socket.io').listen(server);
 var redis = require("redis");
 var mongo = require('mongodb').MongoClient;
 
-var Name = 'trivia';
+var http  = require('http');
+
+var name = 'trivia';
+
+var Database_Backend = {
+
+    backend_link : 'http://dev5.tudalex.com:7781/',
+    app_id : -1,
+
+    get_app_id: function( name, callback ){
+
+        console.log( Database_Backend.backend_link + "get_app_id/" + name );
+
+        http.get( Database_Backend.backend_link + "get_app_id/" + name, function(res) {
+
+            console.log( "Got response: " + res.statusCode);
+            console.log( "Stuffy" + console.dir(res) );
+
+            var pageData = "";
+            res.on('data', function(chunk){
+                pageData += chunk;
+            });
+
+            res.on('end', function(){
+
+               var response = eval(pageData);
+               console.log(response[0]);
+
+               Database_Backend.app_id = response[0].app_id;
+               console.log( "app_id :" + Database_Backend.app_id );
+
+            })
+
+        }).on('error', function(e) {
+                console.log("Got error: " + e.message);
+        });
+
+        callback();
+    }
+};
+
 
 /*
  * Start server
@@ -18,12 +58,15 @@ app.get('/', function(req, res){});
 
 server.listen(process.argv[2]);
 
+console.log("whuaza");
+
 /*
  * Database
  */
 
 redis.debug_mode = true;
 var client = redis.createClient();
+
 
 client.on("error", function (err) {
     console.log("Error " + err);
@@ -168,22 +211,27 @@ var Chat = {
 	}
 };
 
-
 var db = undefined;
 
-mongo.connect("mongodb://localhost:27017/content", function(err, database) {
+var Database = {
 
-    if(err) {
-        console.log(err);
-        return;
+    connect_to_db : function (callback){
+
+            mongo.connect("mongodb://localhost:27017/content", function(err, database) {
+
+            if(err) {
+                console.log(err);
+                return;
+            }
+
+            console.log("Connected to mongo.");
+
+            db = database;
+            callback();
+        });
+
     }
-
-    console.log("Connected to mongo.");
-
-    db = database;
-});
-
-
+}
 
 
 function update_cache(){
@@ -219,63 +267,67 @@ function scrape_collection( coll, query, opt, callback ){
     });
 }
 
+Database_Backend.get_app_id( name, function(){
+
+    Database.connect_to_db( function(){
+
+        io.sockets.on('connection', function (socket) {
+
+            console.log('New Client Connected');
+
+            Chat.connections++;
+
+            if (Chat.connections == 1)
+                Chat.start();
 
 
-io.sockets.on('connection', function (socket) {
+            RedisQuestions.getQuestion(function (data){
+                socket.emit('chat', data);
+            });
 
-	console.log('New Client Connected');
+            socket.on('authenticate', function(data) {
+                console.log('Authectication key : ' + data);
 
-	Chat.connections++;
+                if (data.length == 0)
+                    data = RedisClient.getNewClient(function (data) { // ??
+                        socket.emit('authenticate', data);
+                    });
+                else {
+                    RedisClient.getClient(data, function (data) {
+                        socket.emit('authenticate', data);
+                    });
+                }
+            });
 
-	if (Chat.connections == 1)
-		Chat.start();
+            socket.on('login', function(data) {
+                console.log(JSON.stringify(data));
 
-	RedisQuestions.getQuestion(function (data){
-		socket.emit('chat', data);
-	});
+            });
 
-	socket.on('authenticate', function(data) {
-		console.log('Authectication key : ' + data);
+            socket.on('chat', function (data) {
 
-		if (data.length == 0)
-			data = RedisClient.getNewClient(function (data) { // ??
-				socket.emit('authenticate', data);
-			});
-		else {
-			RedisClient.getClient(data, function (data) {
-				socket.emit('authenticate', data);
-			});
-		}
-	});
+            /*
+                console.log("Question : " + qset[Chat.question]);
 
-	socket.on('login', function(data) {
-		console.log(JSON.stringify(data));
+                if (data.qID == qset[Chat.question].a) {
+                    emitToAll(data + ' : corect');
+                    Chat.next();
+                }
+                else {
+                    emitToAll(data + ' : gresit');
+                }
+            */
 
-	});
+            });
 
-	socket.on('chat', function (data) {
-
-    /*
-    	console.log("Question : " + qset[Chat.question]);
-
-		if (data.qID == qset[Chat.question].a) {
-			emitToAll(data + ' : corect');
-			Chat.next();
-		}
-		else {
-			emitToAll(data + ' : gresit');
-		}
-    */
-
-	});
-
-	socket.on('disconect', function() {
-		Chat.connections--;
-		if (Chat.connections == 0) {
-			Chat.stop();
-		}
-	});
-
+            socket.on('disconect', function() {
+                Chat.connections--;
+                if (Chat.connections == 0) {
+                    Chat.stop();
+                }
+            });
+        });
+    });
 });
 
 function emitToAll(msg) {
