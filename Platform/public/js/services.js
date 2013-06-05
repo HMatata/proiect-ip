@@ -3,6 +3,7 @@
 app.factory('socket', function ($rootScope) {
     var socket = io.connect();
     return {
+        raw: socket,
         on: function (eventName, callback) {
             socket.on(eventName, function () {
                 var args = arguments;

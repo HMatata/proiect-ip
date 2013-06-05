@@ -28,6 +28,7 @@ Controllers.main = function main($scope, $rootScope, $route, $location, socket, 
     $scope.username = "Guest";
     $scope.logout = "Login";
 
+
     socket.on('session:info', function(data) {
 
         console.log("Got session info");
@@ -132,74 +133,143 @@ Controllers.login = function login($scope, $location, socket, localStore) {
     $scope.reset = function () {
         $location.path('/reset_password');
     }
+}
 
+
+var ChatRoom = function(name) {
+    this.name = name;
+    this.messages = [];
+    this.users = {};
+    this.socket.emit('chat:join', name);
+};
+
+ChatRoom.prototype = {
+    focus: function() {
+        //console.log(this);
+        //console.log('Focused ' + this.name);
+        this.scope.focusedRoom = this;
+    },
+
+    sendMessage: function(message) {
+        this.messages.push({
+            user: this.username,
+            text: message,
+            room: this.name
+        });
+
+        this.socket.emit('chat:message', {
+            text: message,
+            room: this.name
+        });
+    },
+
+    showMessage: function(message) {
+        this.messages.push(message);
+    },
+
+    setClients: function(clients) {
+        this.clients = clients;
+    },
+
+    clientLeave: function(name) {
+        this.users[name]--;
+        if (!this.users[name])
+            delete this.users[name];
+
+        this.messages.push({
+            user: 'chatroom',
+            text: 'User ' + name + ' has left'
+        });
+    },
+
+    clientJoin: function(name) {
+        this.messages.push({
+            user: 'chatroom',
+            text: 'User ' + name + ' has joined'
+        });
+        if (this.users[name] == undefined)
+            this.users[name] = 1;
+        else
+            this.users[name]++;
+    },
+
+    leave: function() {
+        this.socket.emit('chat:leave', this.name);
+        delete this.scope.rooms[this.name];
+    }
 }
 
 
 Controllers.chat = function chat($scope, $rootScope, socket) {
 
-    var username = $rootScope.userInfo.username;
-    $scope.messages = [];
-    $scope.users = [];
+    ChatRoom.prototype.username = $rootScope.userInfo.username;
+    ChatRoom.prototype.socket = socket;
+    ChatRoom.prototype.scope = $scope;
 
-    socket.emit('chat:join', 'lobby');
+    $scope.rooms = {};
+
+    var joinRoom = function(name) {
+        var room = new ChatRoom(name);
+        $scope.rooms[name] = room;
+        $scope.focusedRoom = room;
+        console.log($scope.rooms[name]);
+    }
+
+    $scope.joinRoom = function() {
+        var name = $scope.newRoomName;
+        joinRoom(name);
+    };
 
     $scope.sendMessage = function () {
-        $scope.messages.push({
-            user: username,
-            text: $scope.message,
-            room: 'lobby'
-        });
-
-        socket.emit('chat:message', {
-            text: $scope.message,
-            room: 'lobby'
-        });
-
+        $scope.focusedRoom.sendMessage($scope.message);
         $scope.message = '';
     };
 
     socket.on('chat:message', function (message) {
         console.log(message);
-        $scope.messages.push(message);
+        $scope.rooms[message.room].showMessage(message);
     });
 
     socket.on('chat:clients', function(data) {
         console.log(data);
-        $scope.users = data.clients;
+        $scope.rooms[data.room].setClients(data.clients);
     });
 
     socket.on('chat:join', function (data) {
-        $scope.messages.push({
-            user: 'chatroom',
-            text: 'User ' + data.name + ' has joined ' + data.room
-        });
-        if ($scope.users[data.name] == undefined)
-            $scope.users[data.name] = 1;
-        else
-            $scope.users[data.name]++;
-        //$scope.users.push(data.name);
+        $scope.rooms[data.room].clientJoin(data.name);
     });
 
-    // add a message to the conversation when a user disconnects or leaves the room
     socket.on('chat:leave', function (data) {
-//        for (var i in $scope.users) {
-//            var user = $scope.users[i];
-//            if (user === data.name) {
-//                $scope.users.splice(i, 1);
-//                break;
-//            }
-//        }
-        $scope.users[data.name]--;
-        if (!$scope.users[data.name])
-            delete $scope.users[data.name];
-
-
-        $scope.messages.push({
-            user: 'chatroom',
-            text: 'User ' + data.name + ' has left ' + data.room
-        });
+        $scope.rooms[data.room].clientLeave(data.name);
     });
+
+    $scope.$on('$destroy', function() {
+        console.log("Chat was destroyed");
+        for (var room in $scope.rooms) {
+            $scope.rooms[room].leave();
+        }
+
+        var chatEvents = [];
+        var allEvents = socket.raw.$events;
+        console.log("Events ");
+        console.log(allEvents);
+        for (var event in allEvents) {
+            if (event.indexOf('chat:') == 0) {
+                chatEvents.push(event);
+            }
+        }
+        console.log("Removing " + chatEvents);
+
+        //TODO: Does not actually delete the events. Must check out why
+        //TODO: Find out why does the chat:clients event still propagate from the server after leaving the room
+        for (var event in chatEvents) {
+            delete socket.raw.$events[event];
+        }
+        console.log(socket.raw.$events);
+
+    });
+
+    joinRoom('lobby');
 }
 
 Controllers.verify = function verify($scope, $location, socket, $routeParams) {

@@ -21,6 +21,21 @@ app.config( function($routeProvider) {
 		otherwise({ redirectTo: '/home'});
 });
 
+
+app.directive('btab', function($timeout) {
+    return {
+        link: function(scope, elm) {
+            $timeout(function() {
+//                console.log("Scope", scope);
+//                console.log("Elm", elm)
+//                console.log("Args", arguments);
+//                console.log("Fst", elm.children());
+                elm.children().tab('show');
+            });
+        }
+    }
+});
+
 /*
 angular.module('gameService', ['ngResource']).factory('Games', function($resource) {
 	return $resource('games/:gameId.json', {}, {

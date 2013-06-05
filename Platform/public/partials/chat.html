@@ -1,19 +1,32 @@
-<div class="row-fluid">
-    <div class="span4">
-        <h3>Chat</h3>
-        <div class="col"><h3>Users</h3>
-            <div class="overflowable">
-                <p ng-repeat="(user, count) in users" class="ng-scope ng-binding">{{user}} ({{count}})</p>
-            </div>
-        </div>
-        <div class="overflowable">
-            <p ng-class="{alert: message.user == 'chatroom'}" ng-repeat="message in messages" class="ng-scope ng-binding">
-                {{message.room}}/{{message.user}}: {{message.text}}
+<form ng-submit="joinRoom()" class="ng-pristine ng-valid">
+    Room <input ng-model="newRoomName" size="10" class="ng-pristine ng-valid">
+    <input type="submit" value="Join">
+</form>
+
+
+<ul class="nav nav-tabs">
+    <li ng-repeat="(roomId, room) in rooms" class="ng-scope ng-binding" btab>
+        <a href="#{{roomId}}" ng-click="room.focus()" data-toggle="tab">
+            {{roomId}}
+            <button class="close" type="button" ng-click="room.leave()">×</button>
+        </a>
+    </li>
+</ul>
+
+<div class="tab-content">
+    <div ng-repeat="(roomId, room) in rooms" class="ng-scope ng-binding tab-pane" id="{{roomId}}">
+        <div class="overflowable messageList">
+            <p ng-class="{alert: message.user == 'chatroom'}" ng-repeat="message in room.messages" class="ng-scope ng-binding">
+                {{message.user}}: {{message.text}}
             </p>
         </div>
-        <form ng-submit="sendMessage()" class="ng-pristine ng-valid">
-            Message: <input ng-model="message" size="60" class="ng-pristine ng-valid">
-            <input type="submit" value="Send">
-        </form>
+        <div class="overflowable userList">
+            <p ng-repeat="(user, count) in room.users" class="ng-scope ng-binding">{{user}} ({{count}})</p>
+        </div>
     </div>
 </div>
+
+<form ng-submit="sendMessage()" class="ng-pristine ng-valid">
+    Message: <input ng-model="message" size="60" class="ng-pristine ng-valid">
+    <input type="submit" value="Send">
+</form>
