@@ -10,26 +10,41 @@
 
 var Controllers = {};
 
-Controllers.main = function main($scope, $rootScope, $route, $location, socket, localStorageService) {
-    //if $scope.localsocket.emit('auth', )
-	$scope.$route = $route;
+Controllers.main = function main($scope, $rootScope, $route, $location, socket, localStore) {
 
 
+    console.log(localStore);
 
-    $rootScope.$on('userdata', function () {
-        var user_info = JSON.parse(localStorageService.get('user'));
-        console.log("Scope:", $scope);
-        if (user_info != null) {
-            $scope.username = user_info.username;
+    $rootScope.ssid = localStore.getRaw('ssid');
+    $rootScope.userInfo = localStore.get('user');
+
+    $scope.username = "Guest";
+    $scope.logout = "Login";
+
+    socket.on('session:info', function(data) {
+
+        console.log("Got session info");
+        console.log(data);
+
+        var ssid = data.ssid;
+        if (ssid) {
+            if (ssid != $rootScope.ssid) {
+                console.log("Session expired. New ssid = " + ssid);
+                $rootScope.ssid = ssid;
+                localStore.addRaw('ssid', ssid);
+            }
+        }
+        var info = data.info;
+        if (info) {
+            $rootScope.userInfo = info;
+            localStore.add('user', info);
+
+            $scope.username = info.username;
             $scope.logout = "Logout";
-        } else {
-            $scope.username = "Guest";
-            $scope.logout = "Login";
         }
     });
 
-    $scope.$emit('userdata');
-
+    socket.emit('session:identify', $rootScope.ssid);
 }
 
 Controllers.games = function games($scope, socket) {
@@ -42,21 +57,20 @@ Controllers.games = function games($scope, socket) {
 
 }
 
-Controllers.userProfile = function userProfile($scope, $http, $location, localStorageService, socket) {
+Controllers.userProfile = function userProfile($scope, $rootScope, $http, $location, localStore, socket) {
 
-    var user = JSON.parse(localStorageService.get('user'));
-    if (!user)
+    var userInfo = localStore.get('user');
+    if (!userInfo)
         $location.path("/login");
-    $scope.user = {};
-    angular.copy(user, $scope.user);
-    console.log("Scope user object:",$scope.user);
 
+    $scope.user = {};
+    angular.copy(userInfo, $scope.user);
+    console.log("Scope user object:", $scope.user);
 
 	$scope.save = function() {
-
 		socket.emit('user:update', $scope.user);
-        localStorageService.remove('user');
-        localStorageService.add('user', JSON.stringify($scope.user));
+        //localStore.remove('user');
+        localStore.add('user', $scope.user);
 		$location.path('/home');
 	};
 }
@@ -75,6 +89,7 @@ Controllers.gameInstance = function gameInstance($scope, $location, socket, $rou
 
 
 Controllers.signup = function signup($scope, $location, socket) {
+
     socket.on('user:signup', function (data) {
         if (data.msg == 'ok')
             $location.path('/login');
@@ -82,22 +97,21 @@ Controllers.signup = function signup($scope, $location, socket) {
 
     });
     $scope.signup = function () {
-      console.log($scope.user);
-
-      socket.emit('user:add', $scope.user);
+        console.log($scope.user);
+        socket.emit('user:add', $scope.user);
     };
 }
 
-Controllers.login = function login($scope, $location, socket, localStorageService) {
+Controllers.login = function login($scope, $location, socket, localStore) {
 
-    localStorageService.remove('user');
+    localStore.remove('user');
     $scope.$emit('userdata');
     socket.on('user:identify', function (data){
         console.log("Identified as:", data);
-        localStorageService.add('user',JSON.stringify(data));
+        localStore.add('user',JSON.stringify(data));
         $scope.$emit('userdata');
         //TODO: This is how you should use it, don't forget JSON.parse
-        console.log(JSON.parse(localStorageService.get('user')));
+        console.log(JSON.parse(localStore.get('user')));
         $location.path('/home');
     });
     socket.on('user:error', function (data){

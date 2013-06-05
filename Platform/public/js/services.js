@@ -34,10 +34,10 @@ angularLocalStorage.constant('prefix', 'ls');
 // Cookie options (usually in case of fallback)
 // expiry = Number of days before cookies expire // 0 = Does not expire
 // path = The web path the cookie represents
-angularLocalStorage.constant('cookie', { expiry:30, path: '/'});
-angularLocalStorage.constant('notify', { setItem: true, removeItem: false} );
+angularLocalStorage.constant('cookie', { expiry: 30, path: '/' });
+angularLocalStorage.constant('notify', { setItem: true, removeItem: false });
 
-angularLocalStorage.service('localStorageService', [
+angularLocalStorage.service('localStore', [
     '$rootScope',
     'prefix',
     'cookie',
@@ -89,6 +89,10 @@ angularLocalStorage.service('localStorageService', [
             return true;
         };
 
+        var addJsonToLocalStorage = function (key, value) {
+            return addToLocalStorage(key, JSON.stringify(value));
+        }
+
         // Directly get a value from local storage
         // Example use: localStorageService.get('library'); // returns 'angular'
         var getFromLocalStorage = function (key) {
@@ -101,6 +105,10 @@ angularLocalStorage.service('localStorageService', [
             if (!item) return null;
             return item;
         };
+
+        var getJsonFromLocalStorage = function(key) {
+            return JSON.parse(getFromLocalStorage(key));
+        }
 
         // Remove an item from local storage
         // Example use: localStorageService.remove('library'); // removes the key/value pair of library='angular'
@@ -262,8 +270,10 @@ angularLocalStorage.service('localStorageService', [
 
         return {
             isSupported: browserSupportsLocalStorage,
-            add: addToLocalStorage,
-            get: getFromLocalStorage,
+            addRaw: addToLocalStorage,
+            add: addJsonToLocalStorage,
+            getRaw: getFromLocalStorage,
+            get: getJsonFromLocalStorage,
             remove: removeFromLocalStorage,
             clearAll: clearAllFromLocalStorage,
             stringifyJson: stringifyJson,

@@ -39,6 +39,7 @@ function set_errno( err, dbg ){
 /*
     Wrapper for collection.find()
  */
+
 function scrape_collection( coll, query, opt, callback ){
 
     var dbg = "Query: " + coll + ": " + JSON.stringify(query) + " " + JSON.stringify(opt);
