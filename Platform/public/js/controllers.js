@@ -196,7 +196,7 @@ Controllers.reset_password = function reset_password($scope, $location, socket) 
 
 Controllers.feedback = function feedback($scope, socket) {
     $scope.send = function () {
-        socket.emit('feedback', $scope.feedback);
+        socket.emit('user:feedback', $scope.feedback);
         console.log($scope);
     }
 }

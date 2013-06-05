@@ -22,9 +22,6 @@ var transport = nodemailer.createTransport("SMTP", {
 });
 
 
-
-var PP = require('prettyprint');
-
 app.use(express.static(__dirname + '/public'));
 
 app.get('/', function(req, res){});
