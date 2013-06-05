@@ -68,7 +68,7 @@ Controllers.gameInstance = function gameInstance($scope, $location, socket, $rou
         $scope.game = data;
         $scope.game.width = 320;
         $scope.game.height = 440;
-        $scope.game.url = 'http://localhost:8080';
+
         console.log("Data", data);
     });
 }

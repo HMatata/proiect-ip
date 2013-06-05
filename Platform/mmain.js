@@ -214,6 +214,7 @@ Session.prototype = {
 
         if (this.user) {
             socket.switchToClass('loggedin');
+            msg = JSON.parse(JSON.stringify(this.user.getInfo()));
             msg.loggedin = true;
             msg.info = this.user.getInfo();
         }
