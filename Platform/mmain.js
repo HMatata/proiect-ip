@@ -73,6 +73,96 @@ function gravatar(email) {
 
 
 
+var UserManager = {
+    registerUser: function(data) {
+        data.password = hash(data.password);
+        data.image = gravatar(data.email);
+        data.confirmed = false;
+        console.log(data);
+
+        db.collection('users').insert(data, { w: 1 }, function(err, result) {
+            if (err) {
+                console.log("Error:",err);
+                this.emit('user:signup', {'msg':err});
+                return;
+            }
+            var email = {
+                from: "proiect-ip@tudalex.com",
+                to: result[0].email,
+                subject: "Verify your email",
+                generateTextFromHTML: true,
+                html: "Va puteti activa contul facand click pe acest link: <a href='http://dev5.tudalex.com/#/verify_email/"+result[0]._id+"'>http://dev5.tudalex.com/#/verify_email/"+result[0]._id+"</a>"
+            };
+            console.log("Email", email);
+            transport.sendMail(email, function(error, response) {
+                if (error) {
+                    console.log(error);
+                } else {
+                    console.log("Message sent: " + response.message);
+                }
+            });
+            console.log("Result",result);
+            this.emit('user:signup', {msg:'ok'});
+        }.bind(this));
+    },
+
+    resetPassword: function(data) {
+        console.log("Resetting password for email", data);
+        var new_password = crypto.pseudoRandomBytes(15).toString('base64').replace("/",'|').replace('+', '-');
+        var new_pass_hash = hash(new_password);
+        db.collection('users').update({ email: data }, { $set: { password: new_pass_hash } }, {w:1}, function (err, result) {
+
+            if (result == null) {
+                socket.emit('user:reset_password', { msg: "We couldn't find the email specified.", error: true });
+                return;
+            }
+            var email = {
+                from: "proiect-ip@tudalex.com",
+                to: data,
+                subject: "Your password has been reset",
+                generateTextFromHTML: true,
+                html: "Parola dumneavoastra a fost resetata. Noua parola este <b>"+new_password+"</b>"
+            };
+            console.log("Email", email);
+            transport.sendMail(email, function(error, response){
+                if (error) {
+                    console.log(error);
+                } else {
+                    console.log("Message sent: " + response.message);
+                }
+            });
+            this.emit('user:reset_password', {msg: "Password has been reset", error: false});
+        });
+    },
+
+    verifyEmail: function(data) {
+        console.log("Verify email for id", data);
+        db.collection('users').update({_id: ObjectID(data)}, {$set: {confirmed: true}}, {w:1}, function(err, doc) {
+            if (doc == null) {
+                this.emit('user:verify_error', {msg: "Something failed badly."});
+            }
+            this.emit('user:verify', {});
+        }.bind(this));
+    },
+
+    sendFeedback: function(data) {
+        var email = {
+            from: "proiect-ip@tudalex.com",
+            to: "tudalex@gmail.com, gilca.mircea@gmail.com, gabriel.ivanica@gmail.com, alexei6666@gmail.com",
+            subject: "Feedback",
+            text: data
+        };
+        transport.sendMail(email, function(error, response){
+            if (error) {
+                console.log(error);
+            } else {
+                console.log("Message sent: " + response.message);
+            }
+        });
+    }
+};
+
+
 
 
 var User = function(info) {
@@ -102,38 +192,6 @@ User.prototype = {
 
     getInfo: function() {
         return this.info;
-    },
-    addUser: function(data) {
-        data.password = hash(data.password);
-        data.image = gravatar(data.email);
-        data.confirmed = false;
-        console.log(data);
-
-        db.collection('users').insert(data, {w:1}, function(err, result) {
-            if (err) {
-                console.log("Error:",err);
-                this.emit('user:signup', {'msg':err});
-                return;
-            }
-            var email = {
-                from: "proiect-ip@tudalex.com",
-                to: result[0].email,
-                subject: "Verify your email",
-                generateTextFromHTML: true,
-                html: "Va puteti activa contul facand click pe acest link: <a href='http://dev5.tudalex.com/#/verify_email/"+result[0]._id+"'>http://dev5.tudalex.com/#/verify_email/"+result[0]._id+"</a>"
-            };
-            console.log("Email", email);
-            transport.sendMail(email, function(error, response){
-                if(error){
-                    console.log(error);
-                }else{
-                    console.log("Message sent: " + response.message);
-                }
-            });
-            console.log("Result",result);
-            this.emit('user:signup', {msg:'ok'});
-
-        }.bind(this));
     }
 }
 
@@ -177,12 +235,11 @@ Session.prototype = {
 
         for (var i in this.sockets) {
             this.sockets[i].emit('session:info', msg);
-         }
+        }
     }
 };
 
 var SessionManager = function() {
-    //private stuff
     this.users = [];
     this.sessions = [];
 
@@ -221,43 +278,6 @@ var SessionManager = function() {
                 var session = socket.session();
                 session.bindUser(user);
             });
-        },
-        reset_password: function(data, socket) {
-            console.log("Resetting password for email", data);
-            var new_password = crypto.pseudoRandomBytes(15).toString('base64').replace("/",'|').replace('+', '-');
-            var new_pass_hash = hash(new_password);
-            db.collection('users').update( {email: data }, {$set: { password: new_pass_hash}}, {w:1}, function (err, result) {
-
-                if (result == null) {
-                    socket.emit('user:reset_password', {msg: "We couldn't find the email specified.", error:true});
-                    return;
-                }
-                var email = {
-                    from: "proiect-ip@tudalex.com",
-                    to: data,
-                    subject: "Your password has been reset",
-                    generateTextFromHTML: true,
-                    html: "Parola dumneavoastra a fost resetata. Noua parola este <b>"+new_password+"</b>"
-                };
-                console.log("Email", email);
-                transport.sendMail(email, function(error, response){
-                    if(error){
-                        console.log(error);
-                    }else{
-                        console.log("Message sent: " + response.message);
-                    }
-                });
-                socket.emit('user:reset_password', {msg: "Password has been reset", error: false});
-            });
-        },
-        verify_email: function(data, socket) {
-            console.log("Verify email for id", data);
-            db.collection('users').update({_id: ObjectID(data)}, {$set: {confirmed: true}}, {w:1}, function(err, doc) {
-                if (doc == null) {
-                    this.emit('user:verify_error', {msg: "Something failed badly."});
-                }
-                this.emit('user:verify', {});
-            }.bind(this));
         }
     };
 }();
@@ -273,6 +293,11 @@ var ExtendSocket = function(socket, cls) {
     socket.enableEventClass(cls);
 }
 
+ExtendedSocketProto.setup = function() {
+    this.enabledClasses = [];
+    this.$events = [];
+    this.rooms = [];
+}
 
 // The object this in the following functions is going to refer to the extended
 // socket object
@@ -287,6 +312,10 @@ ExtendedSocketProto.classEvents = {
     },
     guest: {
         user: {
+            verify: UserManager.verifyEmail,
+            reset_password: UserManager.resetPassword,
+            feedback: UserManager.sendFeedback,
+
             register: function(data) {
                 data.password = hash(data.password);
                 data.image = gravatar(data.email);
@@ -294,54 +323,33 @@ ExtendedSocketProto.classEvents = {
 
                 db.collection('users').insert(data, { w: 1 }, function(err, result) {
                     if (err) {
-                        console.log("Error:",err);
-                        this.emit('user:signup', {'msg':err});
+                        console.log("Error:", err);
+                        this.emit('user:signup', { msg: err });
                         return;
                     }
                     console.log(result);
-                    this.emit('user:signup', {msg:'ok'});
+                    this.emit('user:signup', { msg: 'ok' });
                 });
             },
+
             auth: function(data) {
                 var username = data.username;
                 var password = data.password;
                 SessionManager.authenticate(this, username, password);
-                this.user.auth(username, password);
-            },
-            verify: function(data, socket) {
-                SessionManager.verify_email(data, socket);
-            },
-            feedback: function(data) {
-                var email = {
-                    from: "proiect-ip@tudalex.com",
-                    to: "tudalex@gmail.com, gilca.mircea@gmail.com, gabriel.ivanica@gmail.com, alexei6666@gmail.com",
-                    subject: "Feedback",
-                    text: data
-                };
-                transport.sendMail(email, function(error, response){
-                    if(error){
-                        console.log(error);
-                    }else{
-                        console.log("Message sent: " + response.message);
-                    }
-                });
-            },
-            reset_password: function(data) {
-                SessionManager.reset_password(data, this);
             }
         }
     },
     loggedin: {
         user: {   // Can't we automagically register all the user functions here? I mean the functions defined in the
                   // user
+            feedback: UserManager.sendFeedback,
+
             update: function(data) {
                 this.session.user.update(data);
             },
+
             logout: function() {
                 this.session.user.logout(); //TODO: Actually implement this function
-            },
-            feedback: function(data) {
-                ExtendedSocketProto.classEvents.guest.feedback(data);
             }
         },
         chat: {
@@ -376,12 +384,6 @@ ExtendedSocketProto.classEvents = {
         }
     }
 };
-
-ExtendedSocketProto.setup = function() {
-    this.enabledClasses = [];
-    this.$events = [];
-    this.rooms = [];
-}
 
 ExtendedSocketProto.enableEventClass = function(cls) {
     var events = this.classEvents[cls];
