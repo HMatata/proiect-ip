@@ -5,6 +5,7 @@ var express = require('express'),
     socketio = require('socket.io'),
     io = socketio.listen(server),
     mongo = require('mongodb').MongoClient,
+    ObjectID = require('mongodb').ObjectID,
     fs = require('fs'),
     nodemailer = require("nodemailer");
 
