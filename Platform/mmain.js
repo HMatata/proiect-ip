@@ -233,7 +233,7 @@ ExtendedSocketProto.classEvents = {
             auth: function(data) {
                 var username = data.username;
                 var password = data.password;
-                this.user.auth(username, password);
+                SessionManager.authenticate(this, username, password);
             }
         }
     },
