@@ -71,10 +71,6 @@ function gravatar(email) {
 }
 
 
-
-
-
-
 var User = function(info) {
     this._id = info._id;
     this.name = info.username;
@@ -86,11 +82,14 @@ var User = function(info) {
 
 User.prototype = {
     update: function(data) {
-        db.collection('users').update({ _id: this._id }, data, { w: 1 }, function(err, doc) {
+        var id = data._id;
+        //TODO: Implement password update here
+        delete data._id;
+        db.collection('users').update({_id: ObjectID(id)}, data, {w:1}, function(err, doc) {
             if (doc == null) {
-                this.emit('user:error', { msg: "Something failed badly." });
+                this.emit('user:error', {msg: "Something failed badly."});
             }
-        });
+        }.bind(this));
     },
 
     addSession: function(session) {
@@ -99,6 +98,38 @@ User.prototype = {
 
     getInfo: function() {
         return this.info;
+    },
+    addUser: function(data) {
+        data.password = hash(data.password);
+        data.image = gravatar(data.email);
+        data.confirmed = false;
+        console.log(data);
+
+        db.collection('users').insert(data, {w:1}, function(err, result) {
+            if (err) {
+                console.log("Error:",err);
+                this.emit('user:signup', {'msg':err});
+                return;
+            }
+            var email = {
+                from: "proiect-ip@tudalex.com",
+                to: result[0].email,
+                subject: "Verify your email",
+                generateTextFromHTML: true,
+                html: "Va puteti activa contul facand click pe acest link: <a href='http://dev5.tudalex.com/#/verify_email/"+result[0]._id+"'>http://dev5.tudalex.com/#/verify_email/"+result[0]._id+"</a>"
+            };
+            console.log("Email", email);
+            transport.sendMail(email, function(error, response){
+                if(error){
+                    console.log(error);
+                }else{
+                    console.log("Message sent: " + response.message);
+                }
+            });
+            console.log("Result",result);
+            this.emit('user:signup', {msg:'ok'});
+
+        }.bind(this));
     }
 }
 
@@ -186,6 +217,43 @@ var SessionManager = function() {
                 var session = socket.session();
                 session.bindUser(user);
             });
+        },
+        reset_password: function(data, socket) {
+            console.log("Resetting password for email", data);
+            var new_password = crypto.pseudoRandomBytes(15).toString('base64').replace("/",'|').replace('+', '-');
+            var new_pass_hash = hash(new_password);
+            db.collection('users').update( {email: data }, {$set: { password: new_pass_hash}}, {w:1}, function (err, result) {
+
+                if (result == null) {
+                    socket.emit('user:reset_password', {msg: "We couldn't find the email specified.", error:true});
+                    return;
+                }
+                var email = {
+                    from: "proiect-ip@tudalex.com",
+                    to: data,
+                    subject: "Your password has been reset",
+                    generateTextFromHTML: true,
+                    html: "Parola dumneavoastra a fost resetata. Noua parola este <b>"+new_password+"</b>"
+                };
+                console.log("Email", email);
+                transport.sendMail(email, function(error, response){
+                    if(error){
+                        console.log(error);
+                    }else{
+                        console.log("Message sent: " + response.message);
+                    }
+                });
+                socket.emit('user:reset_password', {msg: "Password has been reset", error: false});
+            }.bind(this));
+        },
+        verify_email: function(data) {
+            console.log("Verify email for id", data);
+            db.collection('users').update({_id: ObjectID(data)}, {$set: {confirmed: true}}, {w:1}, function(err, doc) {
+                if (doc == null) {
+                    this.emit('user:verify_error', {msg: "Something failed badly."});
+                }
+                this.emit('user:verify', {});
+            }.bind(this));
         }
     };
 }();
@@ -234,6 +302,29 @@ ExtendedSocketProto.classEvents = {
                 var username = data.username;
                 var password = data.password;
                 SessionManager.authenticate(this, username, password);
+                this.user.auth(username, password);
+            },
+            verify: function(data) {
+                //Do I have access to this.user here?
+                User.prototype.verify_email(data);
+            },
+            feedback: function(data) {
+                var email = {
+                    from: "proiect-ip@tudalex.com",
+                    to: "tudalex@gmail.com, gilca.mircea@gmail.com, gabriel.ivanica@gmail.com, alexei6666@gmail.com",
+                    subject: "Feedback",
+                    text: data
+                };
+                transport.sendMail(email, function(error, response){
+                    if(error){
+                        console.log(error);
+                    }else{
+                        console.log("Message sent: " + response.message);
+                    }
+                });
+            },
+            reset_password: function(data) {
+                SessionManager.reset_password(data, this);
             }
         }
     },
@@ -244,7 +335,10 @@ ExtendedSocketProto.classEvents = {
                 this.user.update(data);
             },
             logout: function() {
-                this.user.logout();
+                this.user.logout(); //TODO: Actually implement this function
+            },
+            feedback: function(data) {
+                ExtendedSocketProto.classEvents.guest.feedback(data);
             }
         },
         chat: {
