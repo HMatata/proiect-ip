@@ -12,7 +12,6 @@ var mongo = require('mongodb').MongoClient;
  */
 
 app.use(express.static(__dirname + '/public'));
-
 app.get('/', function(req, res){});
 
 server.listen(process.argv[2]);
@@ -20,8 +19,8 @@ server.listen(process.argv[2]);
 /*
  * Database
  */
-redis.debug_mode = true;
 
+redis.debug_mode = true;
 var client = redis.createClient();
 
 client.on("error", function (err) {
@@ -111,7 +110,7 @@ var RedisQuestions = {
 
 	},
 
-	verifyQuestion : function(data) {
+	verifyQuestion : function(data) {       // ??
 
 		var status = 'FALSE';
 		client.get("user" + data.cid, function (err, reply) {
@@ -131,10 +130,11 @@ var RedisQuestions = {
  */
 
 var Chat = {
-	connections: 0,
 	round_it : 0,
     round_count : 5,
-	time: 0,
+
+    timeout: 1000,
+    connections: 0,
 
 	stop: function () {
 
@@ -144,15 +144,14 @@ var Chat = {
 
         Chat.round_it = Chat.round_it + 1;
 
-        if( Chat.round_it == Chat.round_count ){
-            // ??
+        if( Chat.round_it == Chat.round_count ){ // ??
             Chat.round_it = 0;
         }
 
         console.log("round_it : "+ Chat.round_it );
 
         RedisQuestions.sendNextQuestion();
-		time = setTimeout(Chat.next, 1000);
+		time = setTimeout(Chat.next, Chat.timeout);
 	},
 
 	start: function () {
@@ -161,7 +160,7 @@ var Chat = {
 
             update_cache();
             this.round_it = 0;
-            time = setTimeout(Chat.next, 1000);
+            time = setTimeout(Chat.next, Chat.timeout);
 
         });
 	}
@@ -215,18 +214,6 @@ function scrape_collection( coll, query, opt, callback ){
     });
 }
 
-//
-//function genQuestion(question, answers, right) {
-//    this.id       = 0;
-//    this.right    = right;
-//    this.answers  = answers;
-//    this.question = question;
-//}
-//RedisQuestions.addQuestion(new genQuestion("You're last chance", ["No", "OK", "Die potato"], 2));
-//RedisQuestions.addQuestion(new genQuestion("2 + 2", ["4", "7", "N-am facut mate"], 0));
-//RedisQuestions.addQuestion(new genQuestion("Space", ["..?", "WAT?", "Of course!"], 1));
-
-
 
 
 io.sockets.on('connection', function (socket) {
@@ -263,7 +250,8 @@ io.sockets.on('connection', function (socket) {
 
 	socket.on('chat', function (data) {
 
-/*		console.log("Question : " + qset[Chat.question]);
+    /*
+    	console.log("Question : " + qset[Chat.question]);
 
 		if (data.qID == qset[Chat.question].a) {
 			emitToAll(data + ' : corect');
@@ -272,7 +260,8 @@ io.sockets.on('connection', function (socket) {
 		else {
 			emitToAll(data + ' : gresit');
 		}
-*/
+    */
+
 	});
 
 	socket.on('disconect', function() {
@@ -287,7 +276,14 @@ io.sockets.on('connection', function (socket) {
 function emitToAll(msg) {
 	io.sockets.emit('chat', msg);
 }
+
 //
+//function genQuestion(question, answers, right) {
+//    this.id       = 0;
+//    this.right    = right;
+//    this.answers  = answers;
+//    this.question = question;
+//}
 //RedisQuestions.addQuestion(new genQuestion("You're last chance", ["No", "OK", "Die potato"], 2));
 //RedisQuestions.addQuestion(new genQuestion("2 + 2", ["4", "7", "N-am facut mate"], 0));
 //RedisQuestions.addQuestion(new genQuestion("Space", ["..?", "WAT?", "Of course!"], 1));
