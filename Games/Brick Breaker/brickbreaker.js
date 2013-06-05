@@ -178,7 +178,6 @@ var Canvas = {
 	bricksLeft : 0,
 	defaultSpeed : 1,
 
-
 	initFirst : function initFirst() {
 
 		debug = new Debug("pong", "debug");

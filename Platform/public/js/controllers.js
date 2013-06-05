@@ -108,18 +108,17 @@ Controllers.signup = function signup($scope, $location, socket) {
 Controllers.login = function login($scope, $location, socket, localStore) {
 
     localStore.remove('user');
+    $scope.user = {
+        username: "",
+        password: ""
+    };
     $scope.$emit('userdata');
-    socket.on('user:identify', function (data){
-        console.log("Identified as:", data);
-        localStore.add('user',JSON.stringify(data));
-        $scope.$emit('userdata');
-        //TODO: This is how you should use it, don't forget JSON.parse
-        console.log(JSON.parse(localStore.get('user')));
-        $location.path('/home');
-    });
-    socket.on('user:error', function (data){
+
+    socket.on('session:error', function (data){
         console.log("Error:", data.msg);
         //TODO: Print a nice message
+    	var x = document.getElementById("login_status");
+    	x.className  = "alert alert-error";
     });
 
     $scope.login = function () {

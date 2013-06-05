@@ -71,6 +71,12 @@ a:hover {
 	
 }
 
+#gameframe {
+	margin: 0 auto;
+	border: none;
+	display:block;
+}
+
 /*
  * Footer Section
  */

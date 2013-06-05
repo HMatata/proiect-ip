@@ -2,16 +2,21 @@
 	<div class="span4">
 		<div class="row-fluid">
 			<h3>Login</h3>
+
+			<div id="login_status" class="alert alert-success">
+				<strong> Input your username and password </strong>
+			</div>
+
 			<form novalidate>
 				<div class="span12">
 					<div class="input-prepend">
 						<span class="add-on">Username</span>
-						<input id="prependedInput" ng-model="user.username" type="text">
+						<input id="prependedInput" class="span9" ng-model="user.username" type="text">
 					</div>
-			
+
 					<div class="input-prepend">
 						<span class="add-on">Password</span>
-						<input id="prependedInput" ng-model="user.password" type="password">
+						<input id="prependedInput" class="span9" ng-model="user.password" type="password">
 					</div>
 				</div>
 				<div class="row-fluid">
