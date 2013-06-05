@@ -180,7 +180,7 @@ User.prototype = {
     update: function(socket, data) {
         //TODO: Implement password update here
         delete data._id;
-        db.collection('users').update({ _id: this._id }, data, { w: 1 }, function(err, doc) {
+        db.collection('users').update({ _id: this._id }, { $set: data }, { w: 1 }, function(err, doc) {
             if (doc == null) {
                 this.emit('user:error', { msg: "Something failed badly." });
             }
@@ -266,7 +266,7 @@ var SessionManager = function() {
         authenticate: function(socket, username, password) {
             console.log("Auth request " + username + ":" + password);
             password = hash(password);
-            //console.log(password);
+            console.log(password);
             db.collection('users').findOne({ username: username }, function (err, doc) {
                 if (doc == null || doc.password != password) {
                     console.log("Not found");
