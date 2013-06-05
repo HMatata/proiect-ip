@@ -80,10 +80,6 @@ Controllers.gameInstance = function gameInstance($scope, $location, socket, $rou
     socket.emit('games:gameId', $routeParams.gameId);
     socket.on('games:gameId', function (data) {
         $scope.game = data;
-        $scope.game.width = 320;
-        $scope.game.height = 440;
-
-        console.log("Data", data);
     });
 }
 
