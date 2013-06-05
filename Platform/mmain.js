@@ -51,7 +51,7 @@ mongo.connect("mongodb://localhost:27017/content", function(err, _db) {
     db = _db;
     console.log("Connected to mongo.");
 
-    server.listen(6001, function() {
+    server.listen(process.args[2], function() {
         console.log("Started serving on " + this._connectionKey);
     });
 });
