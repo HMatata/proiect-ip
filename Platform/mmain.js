@@ -241,10 +241,10 @@ ExtendedSocketProto.classEvents = {
         user: {   // Can't we automagically register all the user functions here? I mean the functions defined in the
                   // user
             update: function(data) {
-                this.user.update(data);
+                this.session.user.update(data);
             },
             logout: function() {
-                this.user.logout();
+                this.session.user.logout();
             }
         },
         chat: {
@@ -252,7 +252,8 @@ ExtendedSocketProto.classEvents = {
                 var room = data.room;
                 var message = data.message;
                 this.broadcast.to(room).emit('chat:message', {
-                    name: this.user.name,
+                    room: room,
+                    name: this.session.user.name,
                     text: message
                 });
             },
@@ -261,7 +262,8 @@ ExtendedSocketProto.classEvents = {
                 this.join(room);
                 this.rooms[room] = true;
                 this.broadcast.to(room).emit('chat:join', {
-                    name: this.user.name
+                    room: room,
+                    name: this.session.user.name
                 });
 
             },
@@ -270,7 +272,8 @@ ExtendedSocketProto.classEvents = {
                 this.leave(data.room);
                 delete this.rooms[room];
                 this.broadcast.to(room).emit('chat:leave', {
-                    name: this.user.name
+                    room: room,
+                    name: this.session.user.name
                 });
             }
         }
@@ -280,6 +283,7 @@ ExtendedSocketProto.classEvents = {
 ExtendedSocketProto.setup = function() {
     this.enabledClasses = [];
     this.$events = [];
+    this.rooms = [];
 }
 
 ExtendedSocketProto.enableEventClass = function(cls) {
