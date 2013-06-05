@@ -133,65 +133,73 @@ Controllers.login = function login($scope, $location, socket, localStore) {
 }
 
 
-Controllers.chat = function chat($scope, socket) {
+Controllers.chat = function chat($scope, $rootScope, socket) {
 
-    // Socket listeners
-    // ================
+    var username = $rootScope.userInfo.username;
+    $scope.messages = [];
+    $scope.users = [];
 
-    socket.on('init', function (data) {
-        $scope.name = data.name;
-        $scope.users = data.users;
-    });
+    socket.emit('chat:join', 'lobby');
 
-    socket.on('send:message', function (message) {
+    $scope.sendMessage = function () {
+        $scope.messages.push({
+            user: username,
+            text: $scope.message,
+            room: 'lobby'
+        });
+
+        socket.emit('chat:message', {
+            text: $scope.message,
+            room: 'lobby'
+        });
+
+        $scope.message = '';
+    };
+
+    socket.on('chat:message', function (message) {
         console.log(message);
         $scope.messages.push(message);
     });
 
-    socket.on('user:join', function (data) {
+    socket.on('chat:clients', function(data) {
+        console.log(data);
+        $scope.users = data.clients;
+    });
+
+    socket.on('chat:join', function (data) {
         $scope.messages.push({
             user: 'chatroom',
-            text: 'User ' + data.name + ' has joined.'
+            text: 'User ' + data.name + ' has joined ' + data.room
         });
-        $scope.users.push(data.name);
+        if ($scope.users[data.name] == undefined)
+            $scope.users[data.name] = 1;
+        else
+            $scope.users[data.name]++;
+        //$scope.users.push(data.name);
     });
 
     // add a message to the conversation when a user disconnects or leaves the room
-    socket.on('user:left', function (data) {
+    socket.on('chat:leave', function (data) {
+//        for (var i in $scope.users) {
+//            var user = $scope.users[i];
+//            if (user === data.name) {
+//                $scope.users.splice(i, 1);
+//                break;
+//            }
+//        }
+        $scope.users[data.name]--;
+        if (!$scope.users[data.name])
+            delete $scope.users[data.name];
+
+
         $scope.messages.push({
             user: 'chatroom',
-            text: 'User ' + data.name + ' has left.'
+            text: 'User ' + data.name + ' has left ' + data.room
         });
-        var i, user;
-        for (i = 0; i < $scope.users.length; i++) {
-            user = $scope.users[i];
-            if (user === data.name) {
-                $scope.users.splice(i, 1);
-                break;
-            }
-        }
     });
-
-    $scope.messages = [];
-
-    $scope.sendMessage = function () {
-        socket.emit('send:message', {
-            message: $scope.message
-        });
-
-        // add the message to our model locally
-        $scope.messages.push({
-            user: $scope.name,
-            text: $scope.message
-        });
-
-        // clear message box
-        $scope.message = '';
-    };
 }
 
 Controllers.verify = function verify($scope, $location, socket, $routeParams) {
-
     socket.emit('user:verify', $routeParams.id);
     socket.on('user:verify', function (data) {
         //TODO: maybe print something here

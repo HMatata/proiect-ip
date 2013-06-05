@@ -137,7 +137,7 @@ var UserManager = {
 
     verifyEmail: function(data) {
         console.log("Verify email for id", data);
-        db.collection('users').update({_id: ObjectID(data)}, {$set: {confirmed: true}}, {w:1}, function(err, doc) {
+        db.collection('users').update({_id: ObjectID(data)}, { $set: { confirmed: true } }, { w: 1 }, function(err, doc) {
             if (doc == null) {
                 this.emit('user:verify_error', {msg: "Something failed badly."});
             }
@@ -169,6 +169,7 @@ var User = function(info) {
     this._id = info._id;
     this.name = info.username;
     this.sessions = [];
+    this.rooms = {};
 
     delete info._id;
     delete info.password;
@@ -193,8 +194,16 @@ User.prototype = {
 
     getInfo: function() {
         return this.info;
-    }
+    },
+
+//    joinRoom: function(socket, room) {
+//        if (this.rooms[room] == undefined) {
+//            this.rooms[room] = 0;
+//        }
+//    }
 }
+
+
 
 
 
@@ -357,27 +366,46 @@ ExtendedSocketProto.classEvents = {
         },
         chat: {
             message: function(data) {
-                var room = data.room;
-                var message = data.message;
-                this.broadcast.to(room).emit('chat:message', {
-                    room: room,
-                    name: this.session.user.name,
-                    text: message
-                });
+                console.log("Chat message");
+                console.dir(data);
+                data.user = this.session.user.name;
+                this.broadcast.to(data.room).emit('chat:message', data);
             },
-            join: function(data) {
-                var room = data.room.replace('/','');
+
+            join: function(room) {
+                console.log(this.session.user.name + ' is joining ' + room);
+
+                //console.dir()
+
                 this.join(room);
                 this.rooms[room] = true;
+
                 this.broadcast.to(room).emit('chat:join', {
                     room: room,
                     name: this.session.user.name
                 });
 
+                var clients = io.sockets.clients(room);
+                console.dir(clients);
+
+                var msg = { room: room };
+                var clientCount = {};
+                for (var i in clients) {
+                    console.log(clients[i]);
+                    var name = clients[i].session.user.name;
+                    if (clientCount[name] == undefined)
+                        clientCount[name] = 1;
+                    else
+                        clientCount[name] += 1;
+                }
+                msg.clients = clientCount;
+                console.dir(msg);
+                this.emit('chat:clients', msg);
             },
-            leave: function(data) {
-                var room = data.room.replace('/','');
-                this.leave(data.room);
+
+            leave: function(room) {
+                console.log(this.session.user.name + ' is leaving ' + room);
+                this.leave(room);
                 delete this.rooms[room];
                 this.broadcast.to(room).emit('chat:leave', {
                     room: room,
