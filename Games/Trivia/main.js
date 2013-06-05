@@ -18,12 +18,7 @@ var Database_Backend = {
 
     get_app_id: function( name, callback ){
 
-        console.log( Database_Backend.backend_link + "get_app_id/" + name );
-
         http.get( Database_Backend.backend_link + "get_app_id/" + name, function(res) {
-
-            console.log( "Got response: " + res.statusCode);
-            console.log( "Stuffy" + console.dir(res) );
 
             var pageData = "";
             res.on('data', function(chunk){
@@ -33,7 +28,6 @@ var Database_Backend = {
             res.on('end', function(){
 
                var response = eval(pageData);
-               console.log(response[0]);
 
                Database_Backend.app_id = response[0].app_id;
                console.log( "app_id :" + Database_Backend.app_id );
@@ -46,6 +40,7 @@ var Database_Backend = {
 
         callback();
     }
+
 };
 
 
@@ -57,8 +52,6 @@ app.use(express.static(__dirname + '/public'));
 app.get('/', function(req, res){});
 
 server.listen(process.argv[2]);
-
-console.log("whuaza");
 
 /*
  * Database
