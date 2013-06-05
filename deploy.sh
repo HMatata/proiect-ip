@@ -8,6 +8,7 @@ if  [[ $1 == "REMOTE" ]]; then
     PONG_PORT=$((BASE_PORT + 2))
     TRIVIA_PORT=$((BASE_PORT + 3))
     AWARDS_PORT=$((BASE_PORT + 4))
+    MMAIN_PORT=$((BASE_PORT + 5))
 
     #killall node
     cd deployment
@@ -16,6 +17,7 @@ if  [[ $1 == "REMOTE" ]]; then
     forever start -m 1 Games/Pong/main.js $PONG_PORT
     forever start -m 1 Games/Trivia/main.js $TRIVIA_PORT
     forever start -m 1 AwardsBackend/app.js $AWARDS_PORT
+    forever start -m 1 Platform/mmain.js $MMAIN_PORT
     exit 0
 
 fi
