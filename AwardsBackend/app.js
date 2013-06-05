@@ -137,6 +137,13 @@ function valid_hash( digest, app_id, data )
 
 function setup_api()
 {
+    app.get('/get_app_id/:app_name', function(req,res){
+
+        scrape_collection('shadow', { key : req.params.app_name }, { limit : 1 }, function( app_id ){
+            res.send( app_id );
+        });
+    });
+
     app.get('/get_achievements/:user_id/:app_id/:digest', function(req, res){
 
         var digest   = req.params.digest;

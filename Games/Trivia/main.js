@@ -7,6 +7,8 @@ var	io = require('socket.io').listen(server);
 var redis = require("redis");
 var mongo = require('mongodb').MongoClient;
 
+var Name = 'trivia';
+
 /*
  * Start server
  */
@@ -180,6 +182,9 @@ mongo.connect("mongodb://localhost:27017/content", function(err, database) {
 
     db = database;
 });
+
+
+
 
 function update_cache(){
 
