@@ -63,6 +63,14 @@ a:hover {
 	width: 100px;
 }
 
+
+#game_page .description {
+	margin: 1em 0 0 0;
+	font-size: 1em;
+	text-indent: 1em;
+	
+}
+
 /*
  * Footer Section
  */
