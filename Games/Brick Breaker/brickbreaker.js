@@ -12,7 +12,6 @@ function documentLoad (e) {
 };
 
 
-
 var Resources = {
 
 	to_load: 1,
@@ -103,7 +102,7 @@ function Debug(canvasID, debugElementID) {
 
 	function reportMouse() {
 		out.mouse.textContent = "x: " + mouse.getPosX() +
-								" y : " + mouse.getPosY();
+								"y: " + mouse.getPosY();
 	}
 
 	return {
@@ -189,7 +188,7 @@ var Canvas = {
 
 	},
 
-	start : function () {
+	start : function start() {
 
 		cnv.removeEventListener('mousedown', Canvas.start);
 		Canvas.gameover = 0;
@@ -221,13 +220,14 @@ var Canvas = {
 
 	},
 
-	startInit : function () {
+	startInit : function startInit() {
 		Canvas.init();
 		cnv.removeEventListener('mousedown', Canvas.startInit);
 	},
 
 	init : function () {
 		this.addMouseDir();
+		this.listenInput();
 
 		function render() {
 			if (Canvas.gameover == 0 && Canvas.bricksLeft != 0) {
@@ -257,7 +257,7 @@ var Canvas = {
 	},
 
 
-	draw : function () {
+	draw : function draw() {
 		debug.update();
 		ctx.clearRect(0, 0, 480, 800);
 		this.animateBall(Game.ball);
@@ -265,7 +265,7 @@ var Canvas = {
 		this.drawBricks(Game.bricks,Game.ball);
 	},
 
-	drawBricks: function(bricks, ball) {
+	drawBricks: function drawBricks(bricks, ball) {
 		for(i = 0;i<bricks.length;i++) {
 			if(bricks[i].draw == true) {
 				bricks[i].colision(ball);
@@ -277,7 +277,7 @@ var Canvas = {
 		}
 	},
 
-	animateBar : function (bar) {
+	animateBar : function animateBar(bar) {
 		if (bar.X + bar.dir < 0 || (bar.X + bar.dir + bar.width) > cnv.width)
 			return;
 
@@ -285,7 +285,7 @@ var Canvas = {
 		ctx.fillRect(bar.X, bar.Y, 100, 20);
 	},
 
-	animateBall : function (ball) {
+	animateBall : function animateBall(ball) {
 		if ( (ball.X + ball.size) >= this.sizeX || ball.X <= ball.size)
 			ball.speedX = (-1) * ball.speedX;
 
@@ -312,7 +312,7 @@ var Canvas = {
 		ctx.fill();
 	},
 
-	addMouseDir : function () {
+	addMouseDir : function addMouseDir() {
 
 		cnv.addEventListener('mousedown', function(evt){
 			this.mouse = mouse.getPos();
@@ -338,18 +338,36 @@ var Canvas = {
 		cnv.addEventListener('touchend', function(evt) {
 				Game.bar.dir = 0;
 		}, false);
+	},
+
+	listenInput : function listenInput() {
+		var code;
+		document.addEventListener("keydown", function(e) {
+			code = e.keyCode;
+	
+			if(code == 37)
+				Game.bar.dir = -Game.bar.speedX;
+			if(code == 39)
+				Game.bar.dir = Game.bar.speedX;
+		});
+	
+		document.addEventListener("keyup", function(e) {
+			code = e.keyCode;
+			if(code == 37 || code == 39 && Game.bar.dir)
+				Game.bar.dir = 0;
+		});
 	}
 }
 
 
 function writeMessage(canvas, message) {
-    var context = canvas.getContext('2d');
-    context.fillStyle = "rgba(255, 255, 255, 0.7)"; ;
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    context.font = '30pt Calibri';
+	var context = canvas.getContext('2d');
+	context.fillStyle = "rgba(255, 255, 255, 0.7)"; ;
+	context.fillRect(0, 0, canvas.width, canvas.height);
+	context.font = '30pt Calibri';
 	context.textAlign = 'center'
-    context.fillStyle = 'black';
-    context.fillText(message, canvas.width/2, canvas.height/2 + 50);
+	context.fillStyle = 'black';
+	context.fillText(message, canvas.width/2, canvas.height/2 + 50);
 }
 
 function MouseTracking(elementID) {
