@@ -244,9 +244,9 @@ var SessionManager = function() {
                     }
                 });
                 socket.emit('user:reset_password', {msg: "Password has been reset", error: false});
-            }.bind(this));
+            });
         },
-        verify_email: function(data) {
+        verify_email: function(data, socket) {
             console.log("Verify email for id", data);
             db.collection('users').update({_id: ObjectID(data)}, {$set: {confirmed: true}}, {w:1}, function(err, doc) {
                 if (doc == null) {
@@ -304,9 +304,8 @@ ExtendedSocketProto.classEvents = {
                 SessionManager.authenticate(this, username, password);
                 this.user.auth(username, password);
             },
-            verify: function(data) {
-                //Do I have access to this.user here?
-                User.prototype.verify_email(data);
+            verify: function(data, socket) {
+                SessionManager.verify_email(data, socket);
             },
             feedback: function(data) {
                 var email = {
