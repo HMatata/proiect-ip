@@ -114,7 +114,7 @@ Controllers.login = function login($scope, $location, socket, localStore) {
     };
     $scope.$emit('userdata');
 
-    socket.on('user:error', function (data){
+    socket.on('session:error', function (data){
         console.log("Error:", data.msg);
         //TODO: Print a nice message
     	var x = document.getElementById("login_status");
