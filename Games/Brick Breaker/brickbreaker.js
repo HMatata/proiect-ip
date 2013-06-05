@@ -24,7 +24,6 @@ var Resources = {
 
 		console.log(Resources["images"]["brick"]);
 
-
 		// TODO loading screen
 		if (this.to_load == 0)
 			Canvas.start();
@@ -38,10 +37,8 @@ var Resources = {
 			Resources["images"][obj_name] = this;
 			Resources.newResourceLoaded();
 		};
-
 		imageObj.src = localURL;
 	}
-
 };
 
 
@@ -396,5 +393,3 @@ function MouseTracking(elementID) {
 		}
 	}
 }
-
-

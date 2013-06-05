@@ -1,16 +1,19 @@
 /* CSS Document */
 
+
 body {
 	width:482px;
-	margin:10px auto;
+	margin:0;
+	/*
 	padding:10px 240px;
 	border:1px dashed #CCC;
+	*/
 	-moz-user-select:none;
 }
 
 #pong {
 	margin: 0 auto;
-	border: 1px dashed #666;
+	border: 1px solid #CCC;
 }
 
 #debug {
@@ -20,4 +23,5 @@ body {
 	top: 0;
 	left: 0;
 	border: 1px solid #555;
+	display: none;
 }

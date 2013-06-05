@@ -257,7 +257,7 @@ var Canvas = {
 	},
 
 	update : function () {
-		Engine.debug.update();
+		// Engine.debug.update();
 	},
 
 }
