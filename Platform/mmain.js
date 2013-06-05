@@ -5,7 +5,6 @@ var express = require('express'),
     socketio = require('socket.io'),
     io = socketio.listen(server),
     mongo = require('mongodb').MongoClient,
-    ObjectID = require('mongodb').ObjectID,
     fs = require('fs'),
     nodemailer = require("nodemailer");
 
@@ -170,25 +169,26 @@ var User = function(info) {
     this._id = info._id;
     this.name = info.username;
     this.sessions = [];
+
     delete info._id;
+    delete info.password;
     this.info = info;
 };
 
 
 User.prototype = {
-    update: function(data) {
-        var id = data._id;
+    update: function(socket, data) {
         //TODO: Implement password update here
         delete data._id;
-        db.collection('users').update({_id: ObjectID(id)}, data, {w:1}, function(err, doc) {
+        db.collection('users').update({ _id: this._id }, data, { w: 1 }, function(err, doc) {
             if (doc == null) {
-                this.emit('user:error', {msg: "Something failed badly."});
+                this.emit('user:error', { msg: "Something failed badly." });
             }
-        }.bind(this));
+        }.bind(socket));
     },
 
     addSession: function(session) {
-        this.sessions.append(session);
+        this.sessions.push(session);
     },
 
     getInfo: function() {
@@ -207,7 +207,7 @@ var Session = function(id) {
 
 Session.prototype = {
     bindSocket: function(socket) {
-        this.sockets.append(socket);
+        this.sockets.push(socket);
         socket.session = this;
 
         var msg = {};
@@ -215,47 +215,46 @@ Session.prototype = {
 
         if (this.user) {
             socket.switchToClass('loggedin');
-            msg = JSON.parse(JSON.stringify(this.user.getInfo()));
-            msg.loggedin = true;
             msg.info = this.user.getInfo();
         }
         else {
             socket.switchToClass('guest');
-            msg.loggedin = false;
         }
 
         socket.emit('session:info', msg);
     },
 
-    bindUser: function(user) {
+    bindUser: function(socket, user) {
         this.user = user;
         user.addSession(this)
 
         var msg = {};
-        msg.loggedin = true;
         msg.info = user.getInfo();
 
         for (var i in this.sockets) {
-            this.sockets[i].emit('session:info', msg);
+            //this.sockets[i].emit('session:info', msg);
+            this.sockets[i].switchToClass('loggedin');
         }
+        socket.emit('session:info', msg);
     }
 };
 
 var SessionManager = function() {
-    this.users = [];
-    this.sessions = [];
+    this.users = {};
+    this.sessions = {};
 
-    var manager = this;
+    var self = this;
     var getSession = function(id) {
         function generateSsid() {
-            return 0;
+            return '123';
         }
-        var session = this.sessions[id];
+        var session = self.sessions[id];
         if (session == undefined) {
             id = generateSsid();
             session = new Session(id);
-            this.session[id] = session;
+            self.sessions[id] = session;
         }
+        return session;
     };
 
     return {
@@ -265,20 +264,22 @@ var SessionManager = function() {
         },
 
         authenticate: function(socket, username, password) {
+            console.log("Auth request " + username + ":" + password);
             password = hash(password);
+            //console.log(password);
             db.collection('users').findOne({ username: username }, function (err, doc) {
                 if (doc == null || doc.password != password) {
-                    this.emit('session:error', { msg: 'Username or password not valid' });
+                    console.log("Not found");
+                    socket.emit('session:error', { msg: 'Invalid credentials' });
                     return;
                 }
-
-                var user = manager.users[username];
+                var user = self.users[username];
                 if (user == undefined) {
                     user = new User(doc);
-                    manager.users[username] = user;
+                    self.users[username] = user;
                 }
-                var session = socket.session();
-                session.bindUser(user);
+                var session = socket.session;
+                session.bindUser(socket, user);
             });
         }
     };
@@ -296,8 +297,7 @@ var ExtendSocket = function(socket, cls) {
 }
 
 ExtendedSocketProto.setup = function() {
-    this.enabledClasses = [];
-    this.$events = [];
+    this.enabledClasses = {};
     this.rooms = [];
 }
 
@@ -306,8 +306,9 @@ ExtendedSocketProto.setup = function() {
 ExtendedSocketProto.classEvents = {
     alien: {
         session: {
-            identify: function(data) {
-                var ssid = data.ssid;
+            identify: function(ssid) {
+//                console.log("Got identify");
+//                console.dir(ssid);
                 SessionManager.identify(this, ssid);
             }
         }
@@ -347,7 +348,7 @@ ExtendedSocketProto.classEvents = {
             feedback: UserManager.sendFeedback,
 
             update: function(data) {
-                this.session.user.update(data);
+                this.session.user.update(this, data);
             },
 
             logout: function() {
@@ -392,7 +393,7 @@ ExtendedSocketProto.enableEventClass = function(cls) {
     for (var ns in events) {
         for (var ev in events[ns]) {
             var ev_name = ns + ':' + ev;
-            this.$events[ev_name] = events[ns][ev];
+            this._events[ev_name] = events[ns][ev];
         }
     }
     this.enabledClasses[cls] = true;
@@ -403,7 +404,7 @@ ExtendedSocketProto.disableEventClass = function(cls) {
     for (var ns in events) {
         for (var ev in events[ns]) {
             var ev_name = ns + ':' + ev;
-            delete this.$events[ev_name];
+            delete this._events[ev_name];
         }
     }
     delete this.enabledClasses[cls];
@@ -419,7 +420,8 @@ ExtendedSocketProto.switchToClass = function(new_cls) {
 io.sockets.on('connection', function (socket) {
     // Upgrade the socket
     ExtendSocket(socket, 'alien');
-    socket.emit('init', {});
+    //socket.emit('init', {});
+    //console.dir(socket._events);
 
     socket.on('games:list', function () {
         db.collection('games', function(err, collection) {
