@@ -5,14 +5,13 @@ var	app = express();
 var	server = require('http').createServer(app);
 var	io = require('socket.io').listen(server);
 var redis = require("redis");
-
+var mongo = require('mongodb').MongoClient;
 
 /*
  * Start server
  */
 
 app.use(express.static(__dirname + '/public'));
-
 app.get('/', function(req, res){});
 
 server.listen(process.argv[2]);
@@ -20,8 +19,8 @@ server.listen(process.argv[2]);
 /*
  * Database
  */
-redis.debug_mode = true;
 
+redis.debug_mode = true;
 var client = redis.createClient();
 
 client.on("error", function (err) {
@@ -40,7 +39,7 @@ var RedisClient = {
 
 	setNewClient : function(id, callback) {
 		console.log("User" + id + " added in the DB");
-		client.set('user' + id, JSON.stringify({id: id, nick: 'guest'+id}), function (err, reply) {
+		client.set('user' + id, JSON.stringify({id: id, nick: 'guest'+id}), function () {
 			RedisClient.getClient(id, callback);
 		});
 	},
@@ -58,51 +57,70 @@ var RedisClient = {
 			}
 	    });
 	}
-}
+};
 
 
 var RedisQuestions = {
 
 	question : {},
+    max_count : 0,
 
-	getQuestionNR : function () {
-		client.get("question" + Chat.question, function (err, reply) {
-			RedisQuestions.question_nr = reply;
+    gen_query_id : function() {
+        return  (Math.floor( (Math.random() * 100) + 1 ) % this.max_count) + 1;
+    },
+
+	getQuestionNR : function ( callback ) {
+		client.get("question_nr", function (err, reply) {
+			RedisQuestions.max_count = reply;
+            callback();
 		});
 	},
 
 	getQuestion : function(callback) {
-		client.get("question" + Chat.question, function (err, reply) {
+
+		client.get("question" + this.gen_query_id(), function (err, reply) {
 			if (reply != null) {
 				console.log("Callback", callback);
 				callback(reply);
 				question = reply;
 			}
 		});
+
 	},
 
 	sendNextQuestion : function() {
-		client.get("question" + Chat.question, function (err, reply) {
+
+		client.get("question" + this.gen_query_id(), function (err, reply) {
 			io.sockets.emit('chat', reply);
 			question = reply;
 		});
+
 	},
 
 	addQuestion : function(data) {
-		client.incr('question_nr', function(err, reply) {
-			data.id = reply;
-			client.set("question" + reply, JSON.stringify(data));
-		});
+
+        client.set("question" + data.id, JSON.stringify(data));
+
+        if( data.id > RedisQuestions.max_count ){
+            client.incr('question_nr', function(err, reply) {
+                console.log('incr scrappy');
+                RedisQuestions.max_count = reply;
+            });
+        }
+
 	},
 
-	verifyQuestion : function(data) {
+	verifyQuestion : function(data) {       // ??
+
 		var status = 'FALSE';
 		client.get("user" + data.cid, function (err, reply) {
-			if (RedisQuestions.question.id == data.qid && RedisQuestions.question.right == data.ans)
+
+            if (RedisQuestions.question.id == data.qid && RedisQuestions.question.right == data.ans)
 				status = 'OK';
 
 			io.sockets.emit('answer', {nick: reply.nick, status: status});
 		});
+
 	}
 };
 
@@ -112,27 +130,89 @@ var RedisQuestions = {
  */
 
 var Chat = {
-	connections: 0,
-	question : -1,
-	time: 0,
+	round_it : 0,
+    round_count : 5,
+
+    timeout: 1000,
+    connections: 0,
 
 	stop: function () {
 
 	},
 
 	next: function () {
-		Chat.question++;
-		if (Chat.question == 4)
-			Chat.question = 1;
-		RedisQuestions.sendNextQuestion();
-		time = setTimeout(Chat.next, 10000);
+
+        Chat.round_it = Chat.round_it + 1;
+
+        if( Chat.round_it == Chat.round_count ){ // ??
+            Chat.round_it = 0;
+        }
+
+        console.log("round_it : "+ Chat.round_it );
+
+        RedisQuestions.sendNextQuestion();
+		time = setTimeout(Chat.next, Chat.timeout);
 	},
 
 	start: function () {
-		this.question = 1;
-		time = setTimeout(Chat.next, 10000);
-	},
+
+        RedisQuestions.getQuestionNR( function(){
+
+            update_cache();
+            this.round_it = 0;
+            time = setTimeout(Chat.next, Chat.timeout);
+
+        });
+	}
 };
+
+
+var db = undefined;
+
+mongo.connect("mongodb://localhost:27017/content", function(err, database) {
+
+    if(err) {
+        console.log(err);
+        return;
+    }
+
+    console.log("Connected to mongo.");
+
+    db = database;
+});
+
+function update_cache(){
+
+    scrape_collection( 'triviaq', {}, {}, function( items ){
+
+        console.log('Got it:' + JSON.stringify( items[0] ) );
+
+        console.log( RedisQuestions.max_count + "  " + items.length );
+
+        for (var i = RedisQuestions.max_count; i < items.length; ++i) {
+            RedisQuestions.addQuestion( items[i] );
+        }
+
+    });
+}
+
+function scrape_collection( coll, query, opt, callback ){
+
+    var dbg = "Sorted Scrape: " + coll + ": " + JSON.stringify(query) + " " + JSON.stringify(opt);
+    console.log( dbg );
+
+    db.collection( coll ).find( query, opt ).sort( {id:1} , function(err, cursor){
+        if( err ) throw err;
+
+        cursor.toArray( function(err, items){
+            if( err ) throw err;
+
+            console.log( items );
+            callback( items );
+        });
+
+    });
+}
 
 
 
@@ -153,7 +233,7 @@ io.sockets.on('connection', function (socket) {
 		console.log('Authectication key : ' + data);
 
 		if (data.length == 0)
-			data = RedisClient.getNewClient(function (data) {
+			data = RedisClient.getNewClient(function (data) { // ??
 				socket.emit('authenticate', data);
 			});
 		else {
@@ -170,7 +250,8 @@ io.sockets.on('connection', function (socket) {
 
 	socket.on('chat', function (data) {
 
-/*		console.log("Question : " + qset[Chat.question]);
+    /*
+    	console.log("Question : " + qset[Chat.question]);
 
 		if (data.qID == qset[Chat.question].a) {
 			emitToAll(data + ' : corect');
@@ -179,7 +260,8 @@ io.sockets.on('connection', function (socket) {
 		else {
 			emitToAll(data + ' : gresit');
 		}
-*/
+    */
+
 	});
 
 	socket.on('disconect', function() {
@@ -191,23 +273,20 @@ io.sockets.on('connection', function (socket) {
 
 });
 
-
-function genQuestion(question, anwsers, right) {
-	this.id = 0;
-	this.question = question;
-	this.answers = anwsers;
-	this.right = right;
-}
-
 function emitToAll(msg) {
 	io.sockets.emit('chat', msg);
 }
 
-RedisQuestions.addQuestion(new genQuestion("You're last chance", ["No", "OK", "Die potato"], 2));
-RedisQuestions.addQuestion(new genQuestion("2 + 2", ["4", "7", "N-am facut mate"], 0));
-RedisQuestions.addQuestion(new genQuestion("Space", ["..?", "WAT?", "Of course!"], 1));
-
-
+//
+//function genQuestion(question, answers, right) {
+//    this.id       = 0;
+//    this.right    = right;
+//    this.answers  = answers;
+//    this.question = question;
+//}
+//RedisQuestions.addQuestion(new genQuestion("You're last chance", ["No", "OK", "Die potato"], 2));
+//RedisQuestions.addQuestion(new genQuestion("2 + 2", ["4", "7", "N-am facut mate"], 0));
+//RedisQuestions.addQuestion(new genQuestion("Space", ["..?", "WAT?", "Of course!"], 1));
 
 
 
