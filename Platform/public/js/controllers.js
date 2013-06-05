@@ -12,11 +12,18 @@ var Controllers = {};
 
 Controllers.main = function main($scope, $rootScope, $route, $location, socket, localStore) {
 
-
     console.log(localStore);
 
     $rootScope.ssid = localStore.getRaw('ssid');
     $rootScope.userInfo = localStore.get('user');
+
+    localStore.watch('ssid', function(event) {
+        console.log(event);
+    });
+
+    localStore.watch('user', function(event) {
+        console.log(event.key);
+    });
 
     $scope.username = "Guest";
     $scope.logout = "Login";

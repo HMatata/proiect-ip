@@ -50,14 +50,28 @@ angularLocalStorage.service('localStore', [
             prefix = !!prefix ? prefix + '.' : '';
         }
 
+        var localStorageSupported = false;
+        try {
+            localStorageSupported = ('localStorage' in window && window['localStorage'] !== null);
+        } catch (e) {
+            $rootScope.$broadcast('LocalStorageModule.notification.error',e.message);
+        }
+
+        var callbacks = {};
+
+        var addWatchCallback = function (key, fn) {
+            callbacks[prefix + key] = fn;
+        }
+
+        if (localStorageSupported) {
+            window.addEventListener('storage', function (event) {
+                callbacks[event.key](event);
+            }, false);
+        }
+
         // Checks the browser to see if local storage is supported
         var browserSupportsLocalStorage = function () {
-            try {
-                return ('localStorage' in window && window['localStorage'] !== null);
-            } catch (e) {
-                $rootScope.$broadcast('LocalStorageModule.notification.error',e.message);
-                return false;
-            }
+            return localStorageSupported;
         };
 
         // Directly adds a value to local storage
@@ -276,6 +290,7 @@ angularLocalStorage.service('localStore', [
             get: getJsonFromLocalStorage,
             remove: removeFromLocalStorage,
             clearAll: clearAllFromLocalStorage,
+            watch: addWatchCallback,
             stringifyJson: stringifyJson,
             parseJson: parseJson,
             cookie: {
