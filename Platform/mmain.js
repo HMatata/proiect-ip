@@ -5,10 +5,9 @@ var express = require('express'),
     socketio = require('socket.io'),
     io = socketio.listen(server),
     mongo = require('mongodb').MongoClient,
-    fs = require('fs');
+    fs = require('fs'),
+    nodemailer = require("nodemailer");
 
-var PP = require('prettyprint');
-    //cookie_parser = require('cookie');
 
 app.use(express.static(__dirname + '/public'));
 app.get('/', function(req, res){});
@@ -31,9 +30,18 @@ io.set('store', new RedisStore({
 // gets read of the heartbeats from the log
 io.set('log level', 2);
 // we do not like flash
+// Why?
 io.set('transports', [ 'websocket', 'xhr-polling' ]);
 
 
+// Using gmail. It works. Let it be.
+var transport = nodemailer.createTransport("SMTP", {
+    service: "Gmail",
+    auth: {
+        user: "proiect-ip@tudalex.com",
+        pass: "placintacumere"
+    }
+});
 
 
 
@@ -53,7 +61,7 @@ mongo.connect("mongodb://localhost:27017/content", function(err, _db) {
 function hash(data) {
     var sha = crypto.createHash('sha1');
     sha.update(data);
-    return sha.digest('base64').replace("/",'|');
+    return sha.digest('base64').replace("/",'|').replace('+', '-');
 }
 
 function gravatar(email) {
@@ -138,13 +146,6 @@ Session.prototype = {
     }
 };
 
-
-
-
-
-
-
-
 var SessionManager = function() {
     //private stuff
     this.users = [];
@@ -190,9 +191,6 @@ var SessionManager = function() {
 }();
 
 
-
-
-
 // Monkey-patching is evil so we dynamically upgrade sockets as the connect
 // by swapping their __proto__ to a one that implements our new methods
 var ExtendedSocketProto = Object.create(socketio.Socket.prototype);
@@ -203,6 +201,9 @@ var ExtendSocket = function(socket, cls) {
     socket.enableEventClass(cls);
 }
 
+
+// The object this in the following functions is going to refer to the extended
+// socket object
 ExtendedSocketProto.classEvents = {
     alien: {
         session: {
@@ -237,7 +238,8 @@ ExtendedSocketProto.classEvents = {
         }
     },
     loggedin: {
-        user: {
+        user: {   // Can't we automagically register all the user functions here? I mean the functions defined in the
+                  // user
             update: function(data) {
                 this.user.update(data);
             },
@@ -308,12 +310,6 @@ ExtendedSocketProto.switchToClass = function(new_cls) {
     }
     this.enableEventClass(new_cls);
 }
-
-
-
-
-
-
 
 io.sockets.on('connection', function (socket) {
     // Upgrade the socket
