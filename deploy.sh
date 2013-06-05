@@ -13,11 +13,11 @@ if  [[ $1 == "REMOTE" ]]; then
     #killall node
     cd deployment
     forever stopall
-    forever start -m 1 Platform/main.js $PLATFORM_PORT
+    #forever start -m 1 Platform/main.js $PLATFORM_PORT
     forever start -m 1 Games/Pong/main.js $PONG_PORT
     forever start -m 1 Games/Trivia/main.js $TRIVIA_PORT
     forever start -m 1 AwardsBackend/app.js $AWARDS_PORT
-    forever start -m 1 Platform/mmain.js $MMAIN_PORT
+    forever start -m 1 Platform/mmain.js $PLATFORM_PORT
     exit 0
 
 fi
