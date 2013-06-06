@@ -328,21 +328,7 @@ ExtendedSocketProto.classEvents = {
             reset_password: UserManager.resetPassword,
             feedback: UserManager.sendFeedback,
 
-            register: function(data) {
-                data.password = hash(data.password);
-                data.image = gravatar(data.email);
-                console.log("Adding user " + data);
-
-                db.collection('users').insert(data, { w: 1 }, function(err, result) {
-                    if (err) {
-                        console.log("Error:", err);
-                        this.emit('user:signup', { msg: err });
-                        return;
-                    }
-                    console.log(result);
-                    this.emit('user:signup', { msg: 'ok' });
-                });
-            },
+            add: UserManager.registerUser,
 
             auth: function(data) {
                 var username = data.username;
