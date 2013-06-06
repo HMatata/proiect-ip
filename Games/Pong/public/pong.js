@@ -83,7 +83,7 @@ Game.choiceScreen = function choiceScreen() {
 
 
 Game.connectMultiplayer = function connectMultiplayer() {
-	socket = io.connect('127.0.0.1:8080');
+	socket = io.connect();
 
 	socket.on('init', function (data) {
 		statsPanel.textContent = "players on the server: " + data.playerss;
