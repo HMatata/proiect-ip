@@ -256,7 +256,7 @@ var SessionManager = function() {
     var self = this;
     var getSession = function(id) {
         function generateSsid() {
-            return '123';
+            return crypto.pseudoRandomBytes(15).toString('base64').replace("/",'|').replace('+', '-');
         }
         var session = self.sessions[id];
         if (session == undefined) {
