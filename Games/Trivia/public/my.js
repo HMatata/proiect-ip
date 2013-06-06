@@ -10,7 +10,7 @@ function update_name() {
     window.addEventListener('message', function(event) {
         // We are going to wait for the code that initializes the game session
         console.log(event);
-        localStorage.nick = event.data.nickname;
+        localStorage.nick = event.data.username;
         localStorage.id = event.data._id;
         var socket = io.connect();
         window._sock = socket;
