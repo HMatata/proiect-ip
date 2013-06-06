@@ -49,6 +49,7 @@ Controllers.main = function main($scope, $rootScope, $route, $location, socket, 
 
             $scope.username = info.username;
             $scope.logout = "Logout";
+            $location.path('/games');
         }
     });
 
@@ -83,11 +84,17 @@ Controllers.userProfile = function userProfile($scope, $rootScope, $http, $locat
 	};
 }
 
-Controllers.gameInstance = function gameInstance($scope, $location, socket, $routeParams) {
+Controllers.gameInstance = function gameInstance($scope, $location, $timeout, socket, $routeParams, localStore) {
 
     socket.emit('games:gameId', $routeParams.gameId);
     socket.on('games:gameId', function (data) {
         $scope.game = data;
+        var frame = document.getElementById("gameframe");
+        //console.dir(frame);
+        //console.dir(frame.contentWindow);
+        //monitorEvents(frame.contentWindow, "message");
+
+        $timeout(function(){console.log("pre send");frame.contentWindow.postMessage(localStore.get('user'), "*");console.log("message sent");},1000);
     });
 }
 

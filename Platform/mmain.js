@@ -5,6 +5,7 @@ var express = require('express'),
     socketio = require('socket.io'),
     io = socketio.listen(server),
     mongo = require('mongodb').MongoClient,
+    ObjectID = require('mongodb').ObjectID,
     fs = require('fs'),
     nodemailer = require("nodemailer");
 
@@ -91,7 +92,7 @@ var UserManager = {
                 to: result[0].email,
                 subject: "Verify your email",
                 generateTextFromHTML: true,
-                html: "Va puteti activa contul facand click pe acest link: <a href='http://dev5.tudalex.com/#/verify_email/"+result[0]._id+"'>http://dev5.tudalex.com/#/verify_email/"+result[0]._id+"</a>"
+                html: "Va puteti activa contul facand click pe acest link: <a href='http://dev5.tudalex.com:6001/#/verify_email/"+result[0]._id+"'>http://dev5.tudalex.com:6001/#/verify_email/"+result[0]._id+"</a>"
             };
             console.log("Email", email);
             transport.sendMail(email, function(error, response) {
@@ -276,7 +277,7 @@ var SessionManager = function() {
             console.log("Auth request " + username + ":" + password);
             password = hash(password);
             console.log(password);
-            db.collection('users').findOne({ username: username }, function (err, doc) {
+            db.collection('users').findOne({ username: username, confirmed: true }, function (err, doc) {
                 if (doc == null || doc.password != password) {
                     console.log("Not found");
                     socket.emit('session:error', { msg: 'Invalid credentials' });
@@ -328,21 +329,7 @@ ExtendedSocketProto.classEvents = {
             reset_password: UserManager.resetPassword,
             feedback: UserManager.sendFeedback,
 
-            register: function(data) {
-                data.password = hash(data.password);
-                data.image = gravatar(data.email);
-                console.log("Adding user " + data);
-
-                db.collection('users').insert(data, { w: 1 }, function(err, result) {
-                    if (err) {
-                        console.log("Error:", err);
-                        this.emit('user:signup', { msg: err });
-                        return;
-                    }
-                    console.log(result);
-                    this.emit('user:signup', { msg: 'ok' });
-                });
-            },
+            add: UserManager.registerUser,
 
             auth: function(data) {
                 var username = data.username;
