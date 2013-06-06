@@ -123,7 +123,7 @@ var UserManager = {
                 generateTextFromHTML: true,
                 html: "Parola dumneavoastra a fost resetata. Noua parola este <b>"+new_password+"</b>"
             };
-            console.log("Email", email);                                                                                                         §§§
+            console.log("Email", email);
             transport.sendMail(email, function(error, response){
                 if (error) {
                     console.log(error);
