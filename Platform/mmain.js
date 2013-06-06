@@ -91,7 +91,7 @@ var UserManager = {
                 to: result[0].email,
                 subject: "Verify your email",
                 generateTextFromHTML: true,
-                html: "Va puteti activa contul facand click pe acest link: <a href='http://dev5.tudalex.com/#/verify_email/"+result[0]._id+"'>http://dev5.tudalex.com/#/verify_email/"+result[0]._id+"</a>"
+                html: "Va puteti activa contul facand click pe acest link: <a href='http://dev5.tudalex.com:6001/#/verify_email/"+result[0]._id+"'>http://dev5.tudalex.com:6001/#/verify_email/"+result[0]._id+"</a>"
             };
             console.log("Email", email);
             transport.sendMail(email, function(error, response) {
@@ -123,7 +123,7 @@ var UserManager = {
                 generateTextFromHTML: true,
                 html: "Parola dumneavoastra a fost resetata. Noua parola este <b>"+new_password+"</b>"
             };
-            console.log("Email", email);
+            console.log("Email", email);                                                                                                         §§§
             transport.sendMail(email, function(error, response){
                 if (error) {
                     console.log(error);
@@ -276,7 +276,7 @@ var SessionManager = function() {
             console.log("Auth request " + username + ":" + password);
             password = hash(password);
             console.log(password);
-            db.collection('users').findOne({ username: username }, function (err, doc) {
+            db.collection('users').findOne({ username: username, confirmed: true }, function (err, doc) {
                 if (doc == null || doc.password != password) {
                     console.log("Not found");
                     socket.emit('session:error', { msg: 'Invalid credentials' });
