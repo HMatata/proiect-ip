@@ -22,6 +22,9 @@ a:hover {
 	min-height: 400px;
 }
 
+.thumbnail {
+	height: 350px;
+}
 
 /*
  * Header Section
