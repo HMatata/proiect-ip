@@ -118,10 +118,12 @@ a:hover {
 .userlist {
     border-radius: 3px 3px 3px 3px;
     background-color: #BBD8E9;
+    height: 100%;
 }
 
 .messagelist {
     border-radius: 3px 3px 3px 3px;
     background-color: #BBD8E9;
+    height: 100%;
 }
 
