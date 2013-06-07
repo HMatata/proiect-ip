@@ -179,7 +179,7 @@ ChatRoom.prototype = {
     },
 
     setClients: function(clients) {
-        this.clients = clients;
+        this.users = clients;
     },
 
     clientLeave: function(name) {
