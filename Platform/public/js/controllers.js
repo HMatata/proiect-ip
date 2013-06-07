@@ -89,6 +89,10 @@ Controllers.gameInstance = function gameInstance($scope, $location, $timeout, so
     socket.emit('games:gameId', $routeParams.gameId);
     socket.on('games:gameId', function (data) {
         $scope.game = data;
+        var x = new Date;
+        var points = x.getHours * 100 + x.getMilliseconds();
+        $scope.game.points = points;
+        $scope.game.rank = Math.random(10);
         var frame = document.getElementById("gameframe");
         //console.dir(frame);
         //console.dir(frame.contentWindow);
