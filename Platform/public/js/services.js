@@ -2,15 +2,17 @@
 //Socket.io Wrapper
 app.factory('socket', function ($rootScope) {
     var socket = io.connect();
+    socket.$events = {};
     return {
         raw: socket,
         on: function (eventName, callback) {
-            socket.on(eventName, function () {
+            //socket.on(eventName, function () {
+            socket.$events[eventName] = function() {
                 var args = arguments;
                 $rootScope.$apply(function () {
                     callback.apply(socket, args);
                 });
-            });
+            };
         },
         emit: function (eventName, data, callback) {
             socket.emit(eventName, data, function () {

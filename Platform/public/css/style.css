@@ -68,7 +68,7 @@ a:hover {
 	margin: 1em 0 0 0;
 	font-size: 1em;
 	text-indent: 1em;
-	
+
 }
 
 #gameframe {
@@ -85,7 +85,7 @@ a:hover {
 }
 
 #feedback .inputarea {
-	width: 96%;	
+	width: 96%;
 }
 
 #footer {
@@ -109,5 +109,19 @@ a:hover {
 .scrollable {
     height: 100%;
     overflow: scroll;
+}
+
+.chatroom {
+    height: 300px;
+}
+
+.userlist {
+    border-radius: 3px 3px 3px 3px;
+    background-color: #BBD8E9;
+}
+
+.messagelist {
+    border-radius: 3px 3px 3px 3px;
+    background-color: #BBD8E9;
 }
 

@@ -235,21 +235,26 @@ Controllers.chat = function chat($scope, $rootScope, socket) {
         $scope.focusedRoom.sendMessage($scope.message);
         $scope.message = '';
     };
-
+    //socket.raw.$events['chat:message'] = function(message) {
     socket.on('chat:message', function (message) {
-        console.log(message);
+        console.log("Mesaj de chat",message);
         $scope.rooms[message.room].showMessage(message);
     });
 
     socket.on('chat:clients', function(data) {
+    //socket.raw.$events['chat:clients'] = function(data) {
+        console.log('client list');
+        console.log($scope.rooms[data.room]);
         console.log(data);
         $scope.rooms[data.room].setClients(data.clients);
     });
 
+    //socket.raw.$events['chat:join'] = function(data) {
     socket.on('chat:join', function (data) {
         $scope.rooms[data.room].clientJoin(data.name);
     });
 
+    //socket.raw.$events['chat:leave'] = function(data) {
     socket.on('chat:leave', function (data) {
         $scope.rooms[data.room].clientLeave(data.name);
     });
@@ -273,10 +278,10 @@ Controllers.chat = function chat($scope, $rootScope, socket) {
 
         //TODO: Does not actually delete the events. Must check out why
         //TODO: Find out why does the chat:clients event still propagate from the server after leaving the room
-        for (var event in chatEvents) {
-            delete socket.raw.$events[event];
-        }
-        console.log(socket.raw.$events);
+//        for (var event in chatEvents) {
+//            delete socket.raw.$events[event];
+//        }
+//        console.log(socket.raw.$events);
 
     });
 

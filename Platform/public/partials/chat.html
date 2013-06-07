@@ -13,20 +13,40 @@
     </li>
 </ul>
 
-<div class="tab-content">
-    <div ng-repeat="(roomId, room) in rooms" class="ng-scope ng-binding tab-pane" id="{{roomId}}">
-        <div class="overflowable messageList">
-            <p ng-class="{alert: message.user == 'chatroom'}" ng-repeat="message in room.messages" class="ng-scope ng-binding">
-                {{message.user}}: {{message.text}}
-            </p>
+<!--<div class="tab-content">-->
+    <!--<div ng-repeat="(roomId, room) in rooms" class="ng-scope ng-binding tab-pane" id="{{roomId}}">-->
+        <!--<div class="overflowable messageList">-->
+            <!--<p ng-class="{alert: message.user == 'chatroom'}" ng-repeat="message in room.messages" class="ng-scope ng-binding">-->
+                <!--{{message.user}}: {{message.text}}-->
+            <!--</p>-->
+        <!--</div>-->
+        <!--<div class="overflowable userList">-->
+            <!--<p ng-repeat="(user, count) in room.users" class="ng-scope ng-binding">{{user}} ({{count}})</p>-->
+        <!--</div>-->
+    <!--</div>-->
+<!--</div>-->
+
+
+<div class="tab-content container-fluid chatroom">
+    <div ng-repeat="(roomId, room) in rooms" class="row-fluid ng-scope ng-binding tab-pane" id="{{roomId}}">
+        <div class="messagelist span10">
+            <div class="overflowable">
+                <p ng-class="{alert: message.user == 'chatroom'}" ng-repeat="message in room.messages" class="ng-scope ng-binding">
+                    {{message.user}}: {{message.text}}
+                </p>
+            </div>
         </div>
-        <div class="overflowable userList">
-            <p ng-repeat="(user, count) in room.users" class="ng-scope ng-binding">{{user}} ({{count}})</p>
+        <div class="userlist span2">
+            <div class="overflowable">
+                <p ng-repeat="(user, count) in room.users" class="ng-scope ng-binding">{{user}} ({{count}})</p>
+            </div>
         </div>
     </div>
 </div>
 
-<form ng-submit="sendMessage()" class="ng-pristine ng-valid">
-    Message: <input ng-model="message" size="60" class="ng-pristine ng-valid">
-    <input type="submit" value="Send">
-</form>
+<div class="messageinput">
+    <form ng-submit="sendMessage()" class="ng-pristine ng-valid">
+        <input ng-model="message" size="60" class="ng-pristine ng-valid">
+        <input type="submit" value="Send">
+    </form>
+</div>
