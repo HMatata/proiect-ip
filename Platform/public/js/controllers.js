@@ -90,9 +90,9 @@ Controllers.gameInstance = function gameInstance($scope, $location, $timeout, so
     socket.on('games:gameId', function (data) {
         $scope.game = data;
         var x = new Date;
-        var points = x.getHours() * 100 + x.getMilliseconds();
+        var points = x.getHours() * 1000 + x.getMinutes();
         $scope.game.points = points;
-        $scope.game.rank = parseInt(Math.random() * 10);
+        $scope.game.rank = parseInt(Math.random() * 5);
         var frame = document.getElementById("gameframe");
         //console.dir(frame);
         //console.dir(frame.contentWindow);
